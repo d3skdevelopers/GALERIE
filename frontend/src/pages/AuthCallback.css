@@ -1,0 +1,25 @@
+.auth-callback {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 60vh;
+  text-align: center;
+}
+
+.auth-callback .spinner {
+  font-size: 3rem;
+  color: var(--accent);
+  animation: spin 1s linear infinite;
+  margin-bottom: 1rem;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.auth-callback p {
+  color: var(--text-secondary);
+  font-size: 1.1rem;
+}
