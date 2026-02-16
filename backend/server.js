@@ -24,9 +24,11 @@ app.get('/api/health', (req, res) => {
 // Import routes
 import authRoutes from './routes/auth.js';
 import artworkRoutes from './routes/artworks.js';
+import roomRoutes from './routes/rooms.js';
 
 // Use routes
 app.use('/api/auth', authRoutes(supabase, supabaseAdmin));
 app.use('/api/artworks', artworkRoutes(supabase, supabaseAdmin));
+app.use('/api/rooms', roomRoutes(supabase));
 
 export default app;
