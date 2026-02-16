@@ -15,7 +15,10 @@ export default function Navigation({ session, setDarkMode, darkMode }) {
         {session ? (
           <Link to={`/artist/${session.user.email}`}>@you</Link>
         ) : (
-          <Link to="/login">sign in</Link>
+          <>
+            <Link to="/login">sign in</Link>
+            <Link to="/signup">sign up</Link>
+          </>
         )}
         <button 
           className="theme-toggle"
