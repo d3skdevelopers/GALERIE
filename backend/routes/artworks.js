@@ -12,7 +12,13 @@ export default function artworkRoutes(supabase, supabaseAdmin) {
     try {
       const { data, error } = await supabase
         .from('artworks')
-        .select('*, profiles(username, full_name)')
+        .select(`
+          *,
+          artist:profiles!artworks_artist_id_fkey (
+            username,
+            full_name
+          )
+        `)
         .eq('is_approved', true)
         .order('created_at', { ascending: false });
 
@@ -28,7 +34,13 @@ export default function artworkRoutes(supabase, supabaseAdmin) {
     try {
       const { data, error } = await supabase
         .from('artworks')
-        .select('*, profiles(username, full_name)')
+        .select(`
+          *,
+          artist:profiles!artworks_artist_id_fkey (
+            username,
+            full_name
+          )
+        `)
         .eq('id', req.params.id)
         .single();
 
