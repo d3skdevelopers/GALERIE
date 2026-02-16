@@ -5,6 +5,7 @@
   justify-content: center;
   min-height: 60vh;
   text-align: center;
+  padding: 2rem;
 }
 
 .auth-callback .spinner {
@@ -17,6 +18,18 @@
 @keyframes spin {
   from { transform: rotate(0deg); }
   to { transform: rotate(360deg); }
+}
+
+.auth-callback .success-icon {
+  font-size: 3rem;
+  color: #4CAF50;
+  margin-bottom: 1rem;
+}
+
+.auth-callback .error-icon {
+  font-size: 3rem;
+  color: #f44336;
+  margin-bottom: 1rem;
 }
 
 .auth-callback p {
