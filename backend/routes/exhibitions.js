@@ -5,6 +5,11 @@ const router = express.Router();
 
 export default function exhibitionRoutes(supabase) {
   
+  // Test route to confirm file is loaded
+  router.get('/test', (req, res) => {
+    res.json({ message: 'Exhibitions route is working' });
+  });
+  
   // Get all public exhibitions
   router.get('/', async (req, res) => {
     try {
