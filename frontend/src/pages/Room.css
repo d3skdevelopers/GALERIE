@@ -2,6 +2,7 @@
   padding: 2rem;
   max-width: 1400px;
   margin: 0 auto;
+  width: 100%;
 }
 
 .room-header {
@@ -24,18 +25,21 @@
 
 .room-info {
   text-align: center;
+  padding: 0 1rem;
 }
 
 .room-info h1 {
   font-family: 'Cormorant Garamond', serif;
   font-weight: 300;
-  font-size: 2.5rem;
+  font-size: clamp(1.8rem, 5vw, 2.5rem);
   margin-bottom: 0.5rem;
+  word-break: break-word;
 }
 
 .room-description {
   color: var(--text-secondary);
   margin-bottom: 0.5rem;
+  font-size: clamp(0.8rem, 2.5vw, 1rem);
 }
 
 .room-count {
@@ -46,15 +50,17 @@
 
 .room-grid {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
   gap: 2rem;
   margin: 3rem 0;
+  width: 100%;
 }
 
 .room-artwork {
   text-decoration: none;
   color: inherit;
   aspect-ratio: 1;
+  width: 100%;
 }
 
 .artwork-frame {
@@ -78,7 +84,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 3rem;
+  font-size: clamp(2rem, 5vw, 3rem);
   color: var(--accent);
 }
 
@@ -99,12 +105,13 @@
 }
 
 .artwork-overlay h3 {
-  font-size: 1rem;
+  font-size: clamp(0.8rem, 2.5vw, 1rem);
   margin-bottom: 0.25rem;
+  word-break: break-word;
 }
 
 .artwork-overlay p {
-  font-size: 0.8rem;
+  font-size: clamp(0.7rem, 2vw, 0.8rem);
   opacity: 0.8;
 }
 
@@ -114,6 +121,7 @@
   align-items: center;
   gap: 2rem;
   margin-top: 3rem;
+  flex-wrap: wrap;
 }
 
 .nav-prev, .nav-next {
@@ -123,6 +131,7 @@
   padding: 0.5rem 1rem;
   cursor: pointer;
   transition: all 0.2s;
+  min-width: 60px;
 }
 
 .nav-prev:hover, .nav-next:hover {
@@ -133,6 +142,8 @@
 .room-dots {
   display: flex;
   gap: 0.5rem;
+  flex-wrap: wrap;
+  justify-content: center;
 }
 
 .room-dots .dot {
@@ -144,4 +155,43 @@
 
 .room-dots .dot.active {
   background: var(--accent);
+}
+
+/* Tablet */
+@media (max-width: 768px) {
+  .room-container {
+    padding: 1rem;
+  }
+  
+  .room-grid {
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 1rem;
+  }
+  
+  .room-header {
+    margin-bottom: 2rem;
+  }
+  
+  .back-link {
+    position: relative;
+    display: inline-block;
+    margin-bottom: 1rem;
+  }
+}
+
+/* Mobile */
+@media (max-width: 480px) {
+  .room-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.75rem;
+  }
+  
+  .room-navigation {
+    gap: 1rem;
+  }
+  
+  .nav-prev, .nav-next {
+    padding: 0.4rem 0.8rem;
+    min-width: 50px;
+  }
 }
