@@ -1,17 +1,21 @@
 import { useState, useCallback } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useDropzone } from 'react-dropzone';
-import { Link } from 'react-router-dom';
 import './SearchDesk.css';
 
 export default function SearchDesk() {
+  const navigate = useNavigate();
   const [file, setFile] = useState(null);
   const [searching, setSearching] = useState(false);
   const [results, setResults] = useState(null);
   const [preview, setPreview] = useState(null);
+  const [error, setError] = useState('');
 
   const onDrop = useCallback((acceptedFiles) => {
     const file = acceptedFiles[0];
     setFile(file);
+    setResults(null);
+    setError('');
     
     // Create preview for images
     if (file.type.startsWith('image/')) {
@@ -21,8 +25,6 @@ export default function SearchDesk() {
     } else {
       setPreview(null);
     }
-    
-    setResults(null);
   }, []);
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
@@ -39,26 +41,40 @@ export default function SearchDesk() {
     if (!file) return;
     
     setSearching(true);
+    setError('');
     
-    // Simulate API call
-    setTimeout(() => {
-      setResults({
-        high: [
-          { id: 1, title: 'v26 · The Final Wood', artist: '@you', score: 87, dimensions: { edge: 94, behavior: 89, neural: 82 } },
-          { id: 2, title: 'v18 · Multiverse', artist: '@you', score: 76, dimensions: { edge: 71, texture: 84, neural: 73 } }
-        ],
-        moderate: [
-          { id: 3, title: 'wave7 · Interference', artist: '@taka', score: 68 },
-          { id: 4, title: 'cell12 · Slime', artist: '@julian', score: 59 },
-          { id: 5, title: 'v14 · Awakened', artist: '@you', score: 52 }
-        ],
-        distant: [
-          { id: 6, title: 'v1 · 1974', artist: '@you', score: 35 },
-          { id: 7, title: 'glitch9 · Noise', artist: '@leo', score: 28 }
-        ]
+    // Create form data
+    const formData = new FormData();
+    formData.append('file', file);
+    
+    try {
+      const response = await fetch('/api/search', {
+        method: 'POST',
+        body: formData
       });
+      
+      if (!response.ok) {
+        throw new Error('Search failed');
+      }
+      
+      const data = await response.json();
+      setResults(data);
+    } catch (err) {
+      setError('Search failed. Please try again.');
+      console.error(err);
+    } finally {
       setSearching(false);
-    }, 2000);
+    }
+  };
+
+  const handleProceedToUpload = () => {
+    if (file) {
+      // Store file in session storage to pass to upload page
+      sessionStorage.setItem('pendingUpload', file.name);
+      navigate('/upload', { state: { file } });
+    } else {
+      navigate('/upload');
+    }
   };
 
   return (
@@ -68,7 +84,7 @@ export default function SearchDesk() {
         see if your idea already exists. no judgment. just discovery.
       </p>
 
-      <div {...getRootProps()} className={`dropzone ${isDragActive ? 'active' : ''}`}>
+      <div {...getRootProps()} className={`dropzone ${isDragActive ? 'active' : ''} ${error ? 'error' : ''}`}>
         <input {...getInputProps()} />
         {preview ? (
           <img src={preview} alt="preview" className="file-preview" />
@@ -87,6 +103,8 @@ export default function SearchDesk() {
         )}
       </div>
 
+      {error && <div className="error-message">{error}</div>}
+
       {file && !searching && !results && (
         <button onClick={handleSearch} className="search-btn">
           search
@@ -96,7 +114,7 @@ export default function SearchDesk() {
       {searching && (
         <div className="searching">
           <div className="spinner">✦</div>
-          <p>comparing against {Math.floor(Math.random() * 1000) + 500} works...</p>
+          <p>searching...</p>
         </div>
       )}
 
@@ -104,23 +122,23 @@ export default function SearchDesk() {
         <div className="results">
           <h2>results</h2>
           
-          {results.high.length > 0 && (
+          {results.high && results.high.length > 0 && (
             <div className="result-section high">
               <h3>high similarity (70-100%)</h3>
-              {results.high.map(r => (
-                <div key={r.id} className="result-card">
+              {results.high.map((r, i) => (
+                <div key={i} className="result-card">
                   <div className="result-preview">◈</div>
                   <div className="result-info">
                     <div className="result-header">
-                      <Link to={`/artwork/${r.id}`} className="result-title">{r.title}</Link>
+                      <span className="result-title">{r.title}</span>
                       <span className="result-artist">{r.artist}</span>
                     </div>
                     <div className="result-score">{r.score}% similar</div>
                     {r.dimensions && (
                       <div className="result-dimensions">
-                        <span>edge: {r.dimensions.edge}%</span>
-                        <span>behavior: {r.dimensions.behavior}%</span>
-                        <span>neural: {r.dimensions.neural}%</span>
+                        {Object.entries(r.dimensions).map(([key, value]) => (
+                          <span key={key}>{key}: {value}%</span>
+                        ))}
                       </div>
                     )}
                   </div>
@@ -129,12 +147,12 @@ export default function SearchDesk() {
             </div>
           )}
 
-          {results.moderate.length > 0 && (
+          {results.moderate && results.moderate.length > 0 && (
             <div className="result-section moderate">
               <h3>moderate similarity (40-70%)</h3>
-              {results.moderate.map(r => (
-                <div key={r.id} className="result-item">
-                  <Link to={`/artwork/${r.id}`}>{r.title}</Link>
+              {results.moderate.map((r, i) => (
+                <div key={i} className="result-item">
+                  <span>{r.title}</span>
                   <span>{r.artist}</span>
                   <span className="result-score-small">{r.score}%</span>
                 </div>
@@ -142,23 +160,42 @@ export default function SearchDesk() {
             </div>
           )}
 
-          {results.distant.length > 0 && (
+          {results.distant && results.distant.length > 0 && (
             <div className="result-section distant">
               <h3>distant echoes (20-40%)</h3>
-              {results.distant.map(r => (
-                <div key={r.id} className="result-item">
-                  <Link to={`/artwork/${r.id}`}>{r.title}</Link>
+              {results.distant.map((r, i) => (
+                <div key={i} className="result-item">
+                  <span>{r.title}</span>
                   <span>{r.artist}</span>
                   <span className="result-score-small">{r.score}%</span>
                 </div>
               ))}
+            </div>
+          )}
+
+          {(!results.high || results.high.length === 0) && 
+           (!results.moderate || results.moderate.length === 0) && 
+           (!results.distant || results.distant.length === 0) && (
+            <div className="no-results">
+              <p>No similar works found. Your idea might be completely new.</p>
             </div>
           )}
 
           <div className="result-actions">
             <button onClick={() => setResults(null)} className="start-over">start over</button>
-            <button className="proceed-upload">proceed to voting upload →</button>
+            <button 
+              onClick={handleProceedToUpload} 
+              className="proceed-upload"
+            >
+              proceed to voting upload →
+            </button>
           </div>
+        </div>
+      )}
+
+      {!file && !searching && !results && (
+        <div className="search-prompt">
+          <p>Drop a file to see if similar works exist in the gallery.</p>
         </div>
       )}
     </div>
