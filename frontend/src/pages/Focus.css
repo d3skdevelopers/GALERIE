@@ -2,6 +2,8 @@
   height: 100vh;
   position: relative;
   background: black;
+  width: 100%;
+  overflow: hidden;
 }
 
 .focus-header {
@@ -11,9 +13,11 @@
   right: 0;
   display: flex;
   justify-content: space-between;
-  padding: 2rem;
+  padding: clamp(1rem, 3vw, 2rem);
   z-index: 100;
   pointer-events: none;
+  flex-wrap: wrap;
+  gap: 1rem;
 }
 
 .focus-header a,
@@ -24,20 +28,23 @@
 .focus-header .back-link {
   color: white;
   text-decoration: none;
-  font-size: 0.9rem;
+  font-size: clamp(0.8rem, 2.5vw, 0.9rem);
   text-shadow: 0 0 10px rgba(0,0,0,0.5);
+  background: rgba(0,0,0,0.3);
+  padding: 0.5rem 1rem;
+  border-radius: 4px;
 }
 
 .info-toggle {
-  background: none;
+  background: rgba(0,0,0,0.3);
   border: 1px solid rgba(255,255,255,0.3);
   color: white;
-  width: 36px;
-  height: 36px;
+  width: 40px;
+  height: 40px;
   border-radius: 50%;
   cursor: pointer;
   font-size: 1.2rem;
-  text-shadow: 0 0 10px rgba(0,0,0,0.5);
+  backdrop-filter: blur(5px);
 }
 
 .focus-artwork {
@@ -54,17 +61,19 @@
 
 .focus-info {
   position: fixed;
-  bottom: 2rem;
-  left: 2rem;
-  right: 2rem;
+  bottom: clamp(1rem, 3vw, 2rem);
+  left: clamp(1rem, 3vw, 2rem);
+  right: clamp(1rem, 3vw, 2rem);
   background: rgba(10,10,10,0.95);
   backdrop-filter: blur(10px);
   border: 1px solid var(--border);
-  padding: 2rem;
-  max-width: 400px;
+  padding: clamp(1.5rem, 4vw, 2rem);
+  max-width: min(400px, 90%);
   border-radius: 4px;
   color: white;
   animation: slideUp 0.3s ease;
+  max-height: 80vh;
+  overflow-y: auto;
 }
 
 @keyframes slideUp {
@@ -73,13 +82,16 @@
 }
 
 .focus-info h2 {
-  font-size: 1.5rem;
+  font-size: clamp(1.2rem, 4vw, 1.5rem);
   margin-bottom: 0.25rem;
+  word-break: break-word;
+  padding-right: 1rem;
 }
 
 .focus-info .artist {
   color: var(--accent);
   margin-bottom: 1rem;
+  font-size: clamp(0.8rem, 2.5vw, 0.9rem);
 }
 
 .focus-info .artist a {
@@ -90,7 +102,7 @@
 .focus-info .year,
 .focus-info .medium {
   color: var(--text-secondary);
-  font-size: 0.9rem;
+  font-size: clamp(0.8rem, 2.5vw, 0.9rem);
   margin-bottom: 0.25rem;
 }
 
@@ -108,7 +120,8 @@
 
 .focus-info .description p {
   line-height: 1.6;
-  font-size: 0.95rem;
+  font-size: clamp(0.85rem, 2.5vw, 0.95rem);
+  word-break: break-word;
 }
 
 .kinship-section {
@@ -138,6 +151,7 @@
   text-decoration: none;
   color: white;
   transition: background 0.2s;
+  flex-wrap: wrap;
 }
 
 .kinship-item:hover {
@@ -152,17 +166,21 @@
 
 .kinship-item .title {
   font-size: 0.9rem;
+  word-break: break-word;
+  flex: 1;
 }
 
 .artwork-actions {
   display: flex;
   gap: 1rem;
   margin-top: 1.5rem;
+  flex-wrap: wrap;
 }
 
 .save-btn,
 .share-btn {
   flex: 1;
+  min-width: 120px;
   padding: 0.75rem;
   background: none;
   border: 1px solid rgba(255,255,255,0.2);
@@ -175,4 +193,32 @@
 .share-btn:hover {
   border-color: var(--accent);
   color: var(--accent);
+}
+
+/* Mobile */
+@media (max-width: 480px) {
+  .focus-info {
+    left: 0.5rem;
+    right: 0.5rem;
+    bottom: 0.5rem;
+    max-width: none;
+    max-height: 70vh;
+  }
+  
+  .focus-header {
+    padding: 0.5rem;
+  }
+  
+  .info-toggle {
+    width: 36px;
+    height: 36px;
+  }
+  
+  .artwork-actions {
+    flex-direction: column;
+  }
+  
+  .save-btn, .share-btn {
+    width: 100%;
+  }
 }
