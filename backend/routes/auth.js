@@ -1,9 +1,10 @@
+import express from 'express';
 import jwt from 'jsonwebtoken';
-import bcrypt from 'bcryptjs';
+
+const router = express.Router();
 
 export default function authRoutes(supabase, supabaseAdmin) {
-  const router = express.Router();
-
+  
   // Sign up
   router.post('/signup', async (req, res) => {
     try {
