@@ -15,6 +15,7 @@ import KinshipMap from './pages/KinshipMap';
 import Login from './pages/Login';
 import Signup from './pages/Signup';
 import AuthCallback from './pages/AuthCallback';
+import Upload from './pages/Upload';
 import Navigation from './components/Navigation';
 
 function App() {
@@ -52,6 +53,7 @@ function App() {
             <Route path="/login" element={<Login />} />
             <Route path="/signup" element={<Signup />} />
             <Route path="/auth/callback" element={<AuthCallback />} />
+            <Route path="/upload" element={<Upload session={session} />} />
           </Routes>
         </main>
       </div>
