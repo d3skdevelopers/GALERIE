@@ -2,31 +2,37 @@
   max-width: 1400px;
   margin: 0 auto;
   padding: 2rem;
+  width: 100%;
 }
 
 .hero {
   text-align: center;
   margin: 4rem 0 6rem;
+  padding: 0 1rem;
 }
 
 .hero h1 {
   font-family: 'Cormorant Garamond', serif;
   font-weight: 300;
-  font-size: 5rem;
+  font-size: clamp(3rem, 10vw, 5rem);
   letter-spacing: 4px;
   margin-bottom: 1rem;
+  line-height: 1.2;
 }
 
 .star {
   color: var(--accent);
-  font-size: 2rem;
+  font-size: clamp(1.5rem, 5vw, 2rem);
   margin-bottom: 1.5rem;
 }
 
 .tagline {
-  font-size: 1.1rem;
+  font-size: clamp(0.9rem, 3vw, 1.1rem);
   color: var(--text-secondary);
   margin-bottom: 2rem;
+  max-width: 500px;
+  margin-left: auto;
+  margin-right: auto;
 }
 
 .enter-btn {
@@ -42,6 +48,7 @@
   cursor: pointer;
   transition: all 0.3s ease;
   margin-bottom: 2rem;
+  width: fit-content;
 }
 
 .enter-btn:hover {
@@ -60,11 +67,12 @@
 
 .seed-section {
   margin-top: 4rem;
+  width: 100%;
 }
 
 .seed-section h2 {
   font-family: 'Cormorant Garamond', serif;
-  font-size: 2rem;
+  font-size: clamp(1.5rem, 5vw, 2rem);
   font-weight: 300;
   margin-bottom: 0.5rem;
 }
@@ -79,8 +87,9 @@
 
 .artwork-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
   gap: 2rem;
+  width: 100%;
 }
 
 .artwork-card {
@@ -89,6 +98,7 @@
   text-decoration: none;
   color: inherit;
   transition: transform 0.2s, border-color 0.2s;
+  width: 100%;
 }
 
 .artwork-card:hover {
@@ -101,7 +111,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 2rem;
+  font-size: clamp(1.5rem, 4vw, 2rem);
   color: var(--accent);
   border-bottom: 1px solid var(--border);
 }
@@ -113,9 +123,43 @@
 .artwork-title {
   font-weight: 500;
   margin-bottom: 0.25rem;
+  font-size: clamp(0.8rem, 2.5vw, 1rem);
+  word-break: break-word;
 }
 
 .artwork-meta {
-  font-size: 0.8rem;
+  font-size: clamp(0.7rem, 2vw, 0.8rem);
   color: var(--text-secondary);
+}
+
+/* Tablet */
+@media (max-width: 768px) {
+  .foyer {
+    padding: 1rem;
+  }
+  
+  .hero {
+    margin: 2rem 0 4rem;
+  }
+  
+  .artwork-grid {
+    grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+    gap: 1rem;
+  }
+}
+
+/* Mobile */
+@media (max-width: 480px) {
+  .artwork-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.75rem;
+  }
+  
+  .hero {
+    margin: 1rem 0 3rem;
+  }
+  
+  .enter-btn {
+    padding: 0.75rem 2rem;
+  }
 }
