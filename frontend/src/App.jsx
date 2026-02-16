@@ -12,6 +12,8 @@ import SearchDesk from './pages/SearchDesk';
 import Voting from './pages/Voting';
 import CreateExhibition from './pages/CreateExhibition';
 import KinshipMap from './pages/KinshipMap';
+import Login from './pages/Login';
+import Signup from './pages/Signup';
 import Navigation from './components/Navigation';
 
 function App() {
@@ -46,6 +48,8 @@ function App() {
             <Route path="/voting" element={<Voting session={session} />} />
             <Route path="/create-exhibition" element={<CreateExhibition session={session} />} />
             <Route path="/kinship/:artworkId" element={<KinshipMap />} />
+            <Route path="/login" element={<Login />} />
+            <Route path="/signup" element={<Signup />} />
           </Routes>
         </main>
       </div>
