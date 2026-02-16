@@ -5,9 +5,23 @@
     <link rel="icon" type="image/svg+xml" href="/vite.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>GALERIE · a home for living code</title>
+    <script>
+      // Handle deep links from email clients
+      (function() {
+        // Check if this is an auth callback with hash
+        if (window.location.hash && window.location.hash.includes('access_token')) {
+          console.log('Auth callback detected, staying on page');
+          // Let the React component handle it
+        }
+        // Check for error in query
+        if (window.location.search && window.location.search.includes('error=')) {
+          console.log('Auth error detected');
+        }
+      })();
+    </script>
   </head>
   <body>
     <div id="root"></div>
-    <script type="module" src="./src/main.jsx"></script>
+    <script type="module" src="/src/main.jsx"></script>
   </body>
 </html>
