@@ -1,39 +1,52 @@
+import express from 'express';
+import jwt from 'jsonwebtoken';
+
+const router = express.Router();
+
 export default function exhibitionRoutes(supabase) {
-  const router = express.Router();
-
-  // Get all exhibitions
+  
+  // Get all public exhibitions
   router.get('/', async (req, res) => {
-    const { data, error } = await supabase
-      .from('exhibitions')
-      .select('*')
-      .eq('is_public', true)
-      .order('opening_date', { ascending: false });
+    try {
+      const { data, error } = await supabase
+        .from('exhibitions')
+        .select('*')
+        .eq('is_public', true)
+        .order('opening_date', { ascending: false });
 
-    if (error) return res.status(400).json({ error });
-    res.json(data);
+      if (error) throw error;
+      res.json(data || []);
+    } catch (error) {
+      res.status(400).json({ error: error.message });
+    }
   });
 
   // Get single exhibition with rooms
   router.get('/:id', async (req, res) => {
-    const { data: exhibition, error: exError } = await supabase
-      .from('exhibitions')
-      .select('*')
-      .eq('id', req.params.id)
-      .single();
-
-    if (exError) return res.status(404).json({ error: exError });
-
-    // Get rooms
-    if (exhibition.room_ids?.length > 0) {
-      const { data: rooms } = await supabase
-        .from('rooms')
+    try {
+      // Get exhibition
+      const { data: exhibition, error: exError } = await supabase
+        .from('exhibitions')
         .select('*')
-        .in('id', exhibition.room_ids);
-      
-      exhibition.rooms = rooms;
-    }
+        .eq('id', req.params.id)
+        .single();
 
-    res.json(exhibition);
+      if (exError) throw exError;
+
+      // Get rooms if they exist
+      if (exhibition.room_ids?.length > 0) {
+        const { data: rooms } = await supabase
+          .from('rooms')
+          .select('*')
+          .in('id', exhibition.room_ids);
+        
+        exhibition.rooms = rooms;
+      }
+
+      res.json(exhibition);
+    } catch (error) {
+      res.status(404).json({ error: 'Exhibition not found' });
+    }
   });
 
   // Create exhibition
