@@ -21,8 +21,12 @@ app.get('/api/health', (req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });
 });
 
-// Add auth routes
+// Import routes
 import authRoutes from './routes/auth.js';
+import artworkRoutes from './routes/artworks.js';
+
+// Use routes
 app.use('/api/auth', authRoutes(supabase, supabaseAdmin));
+app.use('/api/artworks', artworkRoutes(supabase, supabaseAdmin));
 
 export default app;
