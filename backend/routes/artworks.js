@@ -1,33 +1,42 @@
+import express from 'express';
 import multer from 'multer';
-import path from 'path';
+import jwt from 'jsonwebtoken';
 
-const upload = multer({ dest: 'uploads/' });
+const upload = multer({ dest: '/tmp' });
+const router = express.Router();
 
 export default function artworkRoutes(supabase, supabaseAdmin) {
-  const router = express.Router();
-
+  
   // Get all approved artworks
   router.get('/', async (req, res) => {
-    const { data, error } = await supabase
-      .from('artworks')
-      .select('*, profiles(username, full_name)')
-      .eq('is_approved', true)
-      .order('created_at', { ascending: false });
+    try {
+      const { data, error } = await supabase
+        .from('artworks')
+        .select('*, profiles(username, full_name)')
+        .eq('is_approved', true)
+        .order('created_at', { ascending: false });
 
-    if (error) return res.status(400).json({ error });
-    res.json(data);
+      if (error) throw error;
+      res.json(data || []);
+    } catch (error) {
+      res.status(400).json({ error: error.message });
+    }
   });
 
   // Get single artwork
   router.get('/:id', async (req, res) => {
-    const { data, error } = await supabase
-      .from('artworks')
-      .select('*, profiles(username, full_name)')
-      .eq('id', req.params.id)
-      .single();
+    try {
+      const { data, error } = await supabase
+        .from('artworks')
+        .select('*, profiles(username, full_name)')
+        .eq('id', req.params.id)
+        .single();
 
-    if (error) return res.status(404).json({ error });
-    res.json(data);
+      if (error) throw error;
+      res.json(data);
+    } catch (error) {
+      res.status(404).json({ error: 'Artwork not found' });
+    }
   });
 
   // Upload new artwork (goes to voting)
@@ -39,6 +48,8 @@ export default function artworkRoutes(supabase, supabaseAdmin) {
       const decoded = jwt.verify(token, process.env.JWT_SECRET);
       const { title, description, year, medium } = req.body;
       const file = req.file;
+
+      if (!file) throw new Error('No file uploaded');
 
       // In production, upload to storage bucket
       const fileUrl = `/uploads/${file.filename}`;
@@ -78,15 +89,14 @@ export default function artworkRoutes(supabase, supabaseAdmin) {
       const { newOwnerId } = req.body;
 
       // Check if current user owns it
-      const { data: artwork } = await supabase
+      const { data: artwork, error: fetchError } = await supabase
         .from('artworks')
         .select('owned_by')
         .eq('id', req.params.id)
         .single();
 
-      if (artwork.owned_by !== decoded.userId) {
-        throw new Error('Not owner');
-      }
+      if (fetchError) throw fetchError;
+      if (artwork.owned_by !== decoded.userId) throw new Error('Not owner');
 
       const { data, error } = await supabase
         .from('artworks')
@@ -96,7 +106,6 @@ export default function artworkRoutes(supabase, supabaseAdmin) {
         .single();
 
       if (error) throw error;
-
       res.json(data);
     } catch (error) {
       res.status(400).json({ error: error.message });
