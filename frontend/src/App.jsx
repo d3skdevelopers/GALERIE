@@ -14,6 +14,7 @@ import CreateExhibition from './pages/CreateExhibition';
 import KinshipMap from './pages/KinshipMap';
 import Login from './pages/Login';
 import Signup from './pages/Signup';
+import AuthCallback from './pages/AuthCallback';
 import Navigation from './components/Navigation';
 
 function App() {
@@ -50,6 +51,7 @@ function App() {
             <Route path="/kinship/:artworkId" element={<KinshipMap />} />
             <Route path="/login" element={<Login />} />
             <Route path="/signup" element={<Signup />} />
+            <Route path="/auth/callback" element={<AuthCallback />} />
           </Routes>
         </main>
       </div>
