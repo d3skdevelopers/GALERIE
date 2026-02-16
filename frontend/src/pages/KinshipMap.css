@@ -1,0 +1,349 @@
+.kinship-map {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 2rem;
+}
+
+.kinship-header {
+  margin-bottom: 3rem;
+  position: relative;
+}
+
+.kinship-header .back-link {
+  color: var(--text-secondary);
+  text-decoration: none;
+  font-size: 0.9rem;
+  position: absolute;
+  left: 0;
+  top: 0;
+}
+
+.kinship-header h1 {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 3rem;
+  font-weight: 300;
+  text-align: center;
+  margin-bottom: 0.5rem;
+}
+
+.kinship-description {
+  text-align: center;
+  color: var(--text-secondary);
+}
+
+.highlight {
+  color: var(--accent);
+}
+
+.kinship-visualization {
+  margin: 4rem 0;
+  padding: 2rem;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  min-height: 400px;
+}
+
+.graph-container {
+  position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 300px;
+}
+
+.center-node {
+  position: relative;
+  z-index: 10;
+  cursor: pointer;
+}
+
+.node-circle {
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  transition: all 0.2s;
+  cursor: pointer;
+}
+
+.node-circle.main {
+  background: var(--accent);
+  color: black;
+}
+
+.node-circle.related {
+  background: var(--bg-primary);
+  border: 2px solid var(--accent);
+  width: 80px;
+  height: 80px;
+}
+
+.node-circle:hover {
+  transform: scale(1.1);
+}
+
+.node-title {
+  font-weight: 500;
+  font-size: 0.9rem;
+  padding: 0 0.5rem;
+}
+
+.node-artist {
+  font-size: 0.7rem;
+  opacity: 0.8;
+}
+
+.node-score {
+  font-size: 1.1rem;
+  font-weight: 500;
+  color: var(--accent);
+}
+
+.related-nodes {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+}
+
+.related-node {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%) 
+             rotate(calc(var(--index) * 45deg)) 
+             translateX(180px) 
+             rotate(calc(var(--index) * -45deg));
+  cursor: pointer;
+}
+
+.connection-line {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 120px;
+  height: 1px;
+  background: var(--border);
+  transform-origin: left;
+  transform: rotate(calc(var(--index) * 45deg)) translateX(40px);
+}
+
+.node-tooltip {
+  position: absolute;
+  top: -40px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--bg-primary);
+  border: 1px solid var(--border);
+  padding: 0.5rem;
+  white-space: nowrap;
+  font-size: 0.8rem;
+  opacity: 0;
+  transition: opacity 0.2s;
+  pointer-events: none;
+  z-index: 20;
+}
+
+.related-node:hover .node-tooltip {
+  opacity: 1;
+}
+
+.tooltip-title {
+  display: block;
+  font-weight: 500;
+}
+
+.tooltip-artist {
+  color: var(--text-secondary);
+  font-size: 0.7rem;
+}
+
+.kinship-details {
+  margin-top: 4rem;
+}
+
+.dimension-filter {
+  margin-bottom: 2rem;
+}
+
+.dimension-filter h3 {
+  font-size: 0.9rem;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: var(--text-secondary);
+  margin-bottom: 1rem;
+}
+
+.filter-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.filter-buttons button {
+  padding: 0.5rem 1rem;
+  background: none;
+  border: 1px solid var(--border);
+  color: var(--text-primary);
+  cursor: pointer;
+  transition: all 0.2s;
+  font-size: 0.9rem;
+}
+
+.filter-buttons button:hover {
+  border-color: var(--accent);
+}
+
+.filter-buttons button.active {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: black;
+}
+
+.kinship-list h3 {
+  font-size: 1rem;
+  margin-bottom: 1rem;
+  color: var(--text-secondary);
+}
+
+.kinship-item {
+  display: flex;
+  gap: 1rem;
+  padding: 1rem;
+  text-decoration: none;
+  color: inherit;
+  border-bottom: 1px solid var(--border);
+  transition: background 0.2s;
+}
+
+.kinship-item:hover {
+  background: var(--bg-secondary);
+}
+
+.kinship-item-preview {
+  width: 60px;
+  height: 60px;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--accent);
+}
+
+.kinship-item-info {
+  flex: 1;
+}
+
+.kinship-item-header {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 0.5rem;
+}
+
+.kinship-item-title {
+  font-weight: 500;
+}
+
+.kinship-item-artist {
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+}
+
+.kinship-scores {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.overall-score {
+  font-size: 0.9rem;
+  color: var(--accent);
+}
+
+.dimension-scores {
+  display: flex;
+  gap: 1rem;
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+}
+
+.node-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0,0,0,0.9);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.modal-content {
+  background: var(--bg-primary);
+  border: 1px solid var(--border);
+  padding: 2rem;
+  max-width: 400px;
+  width: 90%;
+  position: relative;
+}
+
+.modal-close {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  background: none;
+  border: none;
+  color: var(--text-primary);
+  font-size: 1.2rem;
+  cursor: pointer;
+}
+
+.modal-preview {
+  width: 100px;
+  height: 100px;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 2rem;
+  color: var(--accent);
+  margin: 0 auto 1rem;
+}
+
+.modal-content h2 {
+  text-align: center;
+  margin-bottom: 0.25rem;
+}
+
+.modal-artist {
+  text-align: center;
+  color: var(--accent);
+  margin-bottom: 1rem;
+}
+
+.modal-description {
+  color: var(--text-secondary);
+  line-height: 1.6;
+  margin-bottom: 1.5rem;
+}
+
+.modal-link {
+  display: block;
+  text-align: center;
+  color: var(--accent);
+  text-decoration: none;
+  padding: 0.75rem;
+  border: 1px solid var(--border);
+  transition: all 0.2s;
+}
+
+.modal-link:hover {
+  border-color: var(--accent);
+}

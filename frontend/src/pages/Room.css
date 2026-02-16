@@ -1,0 +1,147 @@
+.room-container {
+  padding: 2rem;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+.room-header {
+  margin-bottom: 3rem;
+  position: relative;
+}
+
+.back-link {
+  color: var(--text-secondary);
+  text-decoration: none;
+  font-size: 0.9rem;
+  position: absolute;
+  left: 0;
+  top: 0;
+}
+
+.back-link:hover {
+  color: var(--accent);
+}
+
+.room-info {
+  text-align: center;
+}
+
+.room-info h1 {
+  font-family: 'Cormorant Garamond', serif;
+  font-weight: 300;
+  font-size: 2.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.room-description {
+  color: var(--text-secondary);
+  margin-bottom: 0.5rem;
+}
+
+.room-count {
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+  letter-spacing: 1px;
+}
+
+.room-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 2rem;
+  margin: 3rem 0;
+}
+
+.room-artwork {
+  text-decoration: none;
+  color: inherit;
+  aspect-ratio: 1;
+}
+
+.artwork-frame {
+  width: 100%;
+  height: 100%;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  position: relative;
+  overflow: hidden;
+  transition: transform 0.3s, border-color 0.3s;
+}
+
+.artwork-frame:hover {
+  transform: scale(1.02);
+  border-color: var(--accent);
+}
+
+.artwork-preview {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 3rem;
+  color: var(--accent);
+}
+
+.artwork-overlay {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: linear-gradient(transparent, rgba(0,0,0,0.8));
+  color: white;
+  padding: 1rem;
+  transform: translateY(100%);
+  transition: transform 0.3s;
+}
+
+.artwork-frame:hover .artwork-overlay {
+  transform: translateY(0);
+}
+
+.artwork-overlay h3 {
+  font-size: 1rem;
+  margin-bottom: 0.25rem;
+}
+
+.artwork-overlay p {
+  font-size: 0.8rem;
+  opacity: 0.8;
+}
+
+.room-navigation {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 2rem;
+  margin-top: 3rem;
+}
+
+.nav-prev, .nav-next {
+  background: none;
+  border: 1px solid var(--border);
+  color: var(--text-primary);
+  padding: 0.5rem 1rem;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.nav-prev:hover, .nav-next:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.room-dots {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.room-dots .dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--border);
+}
+
+.room-dots .dot.active {
+  background: var(--accent);
+}

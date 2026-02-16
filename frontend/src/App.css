@@ -1,0 +1,38 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  line-height: 1.5;
+}
+
+.dark {
+  --bg-primary: #0A0A0A;
+  --bg-secondary: #121212;
+  --text-primary: #EEEEEE;
+  --text-secondary: #9A9A9A;
+  --accent: #D4AF37;
+  --border: #2A2A2A;
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+}
+
+.light {
+  --bg-primary: #FFFFFF;
+  --bg-secondary: #FAFAFA;
+  --text-primary: #1A1A1A;
+  --text-secondary: #6B6B6B;
+  --accent: #C49A6C;
+  --border: #EAEAEA;
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+}
+
+main {
+  min-height: 100vh;
+}
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500&family=Cormorant+Garamond:wght@300;400&display=swap');

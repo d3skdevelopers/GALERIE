@@ -1,0 +1,178 @@
+.focus-container {
+  height: 100vh;
+  position: relative;
+  background: black;
+}
+
+.focus-header {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  display: flex;
+  justify-content: space-between;
+  padding: 2rem;
+  z-index: 100;
+  pointer-events: none;
+}
+
+.focus-header a,
+.focus-header button {
+  pointer-events: auto;
+}
+
+.focus-header .back-link {
+  color: white;
+  text-decoration: none;
+  font-size: 0.9rem;
+  text-shadow: 0 0 10px rgba(0,0,0,0.5);
+}
+
+.info-toggle {
+  background: none;
+  border: 1px solid rgba(255,255,255,0.3);
+  color: white;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  cursor: pointer;
+  font-size: 1.2rem;
+  text-shadow: 0 0 10px rgba(0,0,0,0.5);
+}
+
+.focus-artwork {
+  width: 100%;
+  height: 100%;
+}
+
+.artwork-iframe {
+  width: 100%;
+  height: 100%;
+  border: none;
+  background: black;
+}
+
+.focus-info {
+  position: fixed;
+  bottom: 2rem;
+  left: 2rem;
+  right: 2rem;
+  background: rgba(10,10,10,0.95);
+  backdrop-filter: blur(10px);
+  border: 1px solid var(--border);
+  padding: 2rem;
+  max-width: 400px;
+  border-radius: 4px;
+  color: white;
+  animation: slideUp 0.3s ease;
+}
+
+@keyframes slideUp {
+  from { transform: translateY(100%); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+.focus-info h2 {
+  font-size: 1.5rem;
+  margin-bottom: 0.25rem;
+}
+
+.focus-info .artist {
+  color: var(--accent);
+  margin-bottom: 1rem;
+}
+
+.focus-info .artist a {
+  color: var(--accent);
+  text-decoration: none;
+}
+
+.focus-info .year,
+.focus-info .medium {
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+  margin-bottom: 0.25rem;
+}
+
+.focus-info .description {
+  margin: 1.5rem 0;
+}
+
+.focus-info .description h3 {
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: var(--text-secondary);
+  margin-bottom: 0.5rem;
+}
+
+.focus-info .description p {
+  line-height: 1.6;
+  font-size: 0.95rem;
+}
+
+.kinship-section {
+  margin: 1.5rem 0;
+}
+
+.kinship-section h3 {
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: var(--text-secondary);
+  margin-bottom: 0.5rem;
+}
+
+.kinship-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.kinship-item {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 0.5rem;
+  background: rgba(255,255,255,0.05);
+  text-decoration: none;
+  color: white;
+  transition: background 0.2s;
+}
+
+.kinship-item:hover {
+  background: rgba(255,255,255,0.1);
+}
+
+.kinship-item .score {
+  font-size: 0.9rem;
+  color: var(--accent);
+  min-width: 45px;
+}
+
+.kinship-item .title {
+  font-size: 0.9rem;
+}
+
+.artwork-actions {
+  display: flex;
+  gap: 1rem;
+  margin-top: 1.5rem;
+}
+
+.save-btn,
+.share-btn {
+  flex: 1;
+  padding: 0.75rem;
+  background: none;
+  border: 1px solid rgba(255,255,255,0.2);
+  color: white;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.save-btn:hover,
+.share-btn:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}

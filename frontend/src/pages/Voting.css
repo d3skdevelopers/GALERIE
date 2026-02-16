@@ -1,0 +1,178 @@
+.voting-container {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 3rem 2rem;
+}
+
+.voting-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2rem;
+}
+
+.voting-header h1 {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 3rem;
+  font-weight: 300;
+}
+
+.tickets {
+  text-align: right;
+}
+
+.tickets-count {
+  display: block;
+  font-size: 2rem;
+  font-weight: 300;
+  color: var(--accent);
+  line-height: 1;
+}
+
+.tickets-label {
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+}
+
+.voting-description {
+  color: var(--text-secondary);
+  margin-bottom: 2rem;
+}
+
+.signin-prompt {
+  display: inline-block;
+  color: var(--accent);
+  text-decoration: none;
+  font-size: 1.1rem;
+}
+
+.voting-filters {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 2rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.voting-filters button {
+  background: none;
+  border: none;
+  padding: 0.5rem 0;
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+  cursor: pointer;
+  position: relative;
+}
+
+.voting-filters button.active {
+  color: var(--accent);
+}
+
+.voting-filters button.active::after {
+  content: '';
+  position: absolute;
+  bottom: -1px;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: var(--accent);
+}
+
+.submissions-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.submission-card {
+  display: flex;
+  gap: 1.5rem;
+  padding: 1.5rem;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+}
+
+.submission-preview {
+  width: 80px;
+  height: 80px;
+  background: var(--bg-primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 2rem;
+  color: var(--accent);
+  border: 1px solid var(--border);
+}
+
+.submission-info {
+  flex: 1;
+}
+
+.submission-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.5rem;
+}
+
+.submission-header h3 {
+  font-size: 1.1rem;
+}
+
+.submission-artist {
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+}
+
+.submission-description {
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+  margin-bottom: 0.75rem;
+  line-height: 1.5;
+}
+
+.submission-meta {
+  display: flex;
+  gap: 1.5rem;
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+  margin-bottom: 1rem;
+}
+
+.vote-actions {
+  display: flex;
+  gap: 1rem;
+}
+
+.vote-yes,
+.vote-no {
+  padding: 0.5rem 1.5rem;
+  background: none;
+  border: 1px solid var(--border);
+  color: var(--text-primary);
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.vote-yes:hover:not(:disabled) {
+  border-color: #4CAF50;
+  color: #4CAF50;
+}
+
+.vote-no:hover:not(:disabled) {
+  border-color: #f44336;
+  color: #f44336;
+}
+
+.vote-yes:disabled,
+.vote-no:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
+.voted-indicator {
+  padding: 0.5rem 1rem;
+  background: rgba(212, 175, 55, 0.1);
+  color: var(--accent);
+  font-size: 0.9rem;
+  display: inline-block;
+}
