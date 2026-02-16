@@ -1,6 +1,7 @@
 import { useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useDropzone } from 'react-dropzone';
+import { apiUpload } from '../lib/api';
 import './SearchDesk.css';
 
 export default function SearchDesk() {
@@ -17,7 +18,6 @@ export default function SearchDesk() {
     setResults(null);
     setError('');
     
-    // Create preview for images
     if (file.type.startsWith('image/')) {
       const reader = new FileReader();
       reader.onload = () => setPreview(reader.result);
@@ -43,21 +43,11 @@ export default function SearchDesk() {
     setSearching(true);
     setError('');
     
-    // Create form data
     const formData = new FormData();
     formData.append('file', file);
     
     try {
-      const response = await fetch('/api/search', {
-        method: 'POST',
-        body: formData
-      });
-      
-      if (!response.ok) {
-        throw new Error('Search failed');
-      }
-      
-      const data = await response.json();
+      const data = await apiUpload('/api/search', formData);
       setResults(data);
     } catch (err) {
       setError('Search failed. Please try again.');
@@ -69,8 +59,6 @@ export default function SearchDesk() {
 
   const handleProceedToUpload = () => {
     if (file) {
-      // Store file in session storage to pass to upload page
-      sessionStorage.setItem('pendingUpload', file.name);
       navigate('/upload', { state: { file } });
     } else {
       navigate('/upload');
