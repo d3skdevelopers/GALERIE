@@ -1,43 +1,56 @@
-export default function roomRoutes(supabase) {
-  const router = express.Router();
+import express from 'express';
+import jwt from 'jsonwebtoken';
 
+const router = express.Router();
+
+export default function roomRoutes(supabase) {
+  
   // Get all public rooms
   router.get('/', async (req, res) => {
-    const { data, error } = await supabase
-      .from('rooms')
-      .select('*, spaces(name)')
-      .eq('is_public', true)
-      .order('created_at');
+    try {
+      const { data, error } = await supabase
+        .from('rooms')
+        .select('*, spaces(name)')
+        .eq('is_public', true)
+        .order('created_at');
 
-    if (error) return res.status(400).json({ error });
-    res.json(data);
+      if (error) throw error;
+      res.json(data || []);
+    } catch (error) {
+      res.status(400).json({ error: error.message });
+    }
   });
 
   // Get single room with artworks
   router.get('/:id', async (req, res) => {
-    const { data: room, error: roomError } = await supabase
-      .from('rooms')
-      .select('*')
-      .eq('id', req.params.id)
-      .single();
+    try {
+      // Get room
+      const { data: room, error: roomError } = await supabase
+        .from('rooms')
+        .select('*')
+        .eq('id', req.params.id)
+        .single();
 
-    if (roomError) return res.status(404).json({ error: roomError });
+      if (roomError) throw roomError;
 
-    // Get artwork details from layout
-    const artworkIds = room.layout?.artworks?.map(a => a.id) || [];
-    
-    if (artworkIds.length > 0) {
-      const { data: artworks } = await supabase
-        .from('artworks')
-        .select('*, profiles(username)')
-        .in('id', artworkIds);
+      // Get artwork details from layout
+      const artworkIds = room.layout?.artworks?.map(a => a.id) || [];
       
-      room.artworks = artworks;
-    } else {
-      room.artworks = [];
-    }
+      if (artworkIds.length > 0) {
+        const { data: artworks } = await supabase
+          .from('artworks')
+          .select('*, profiles(username)')
+          .in('id', artworkIds);
+        
+        room.artworks = artworks;
+      } else {
+        room.artworks = [];
+      }
 
-    res.json(room);
+      res.json(room);
+    } catch (error) {
+      res.status(404).json({ error: 'Room not found' });
+    }
   });
 
   // Create room
