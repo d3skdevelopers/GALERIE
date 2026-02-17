@@ -10,7 +10,7 @@ export default function voteRoutes(supabase) {
     res.json({ message: 'Votes route is working' });
   });
 
-  // Get artworks needing votes (excluding user's own)
+  // Get artworks needing votes (diagnostic version)
   router.get('/pending', async (req, res) => {
     try {
       const token = req.headers.authorization?.split(' ')[1];
@@ -18,7 +18,21 @@ export default function voteRoutes(supabase) {
 
       const decoded = jwt.verify(token, process.env.JWT_SECRET);
       
-      const { data, error } = await supabase
+      // Step 1: Get ALL unapproved artworks
+      const { data: allUnapproved, error: err1 } = await supabase
+        .from('artworks')
+        .select('id, title, artist_id, voting_ends')
+        .eq('is_approved', false);
+      
+      // Step 2: Get only those with future voting_ends
+      const { data: futureVotes, error: err2 } = await supabase
+        .from('artworks')
+        .select('id, title, artist_id, voting_ends')
+        .eq('is_approved', false)
+        .gt('voting_ends', new Date().toISOString());
+      
+      // Step 3: Get final filtered list with profiles
+      const { data: final, error: err3 } = await supabase
         .from('artworks')
         .select('*, profiles(username)')
         .eq('is_approved', false)
@@ -26,8 +40,17 @@ export default function voteRoutes(supabase) {
         .neq('artist_id', decoded.userId)
         .order('voting_ends', { ascending: true });
 
-      if (error) throw error;
-      res.json(data || []);
+      res.json({
+        debug: {
+          your_id: decoded.userId,
+          all_unapproved_count: allUnapproved?.length || 0,
+          future_votes_count: futureVotes?.length || 0,
+          final_count: final?.length || 0,
+          all_unapproved_data: allUnapproved || [],
+          future_votes_data: futureVotes || []
+        },
+        pending: final || []
+      });
     } catch (error) {
       res.status(400).json({ error: error.message });
     }
