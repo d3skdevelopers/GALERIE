@@ -17,6 +17,11 @@ export default function Voting({ session }) {
       // Get the current session
       const { data: { session } } = await supabase.auth.getSession();
       
+      if (!session) {
+        console.log('No session, cannot make authenticated request');
+        return null;
+      }
+      
       let token = session?.access_token;
       
       if (!token) {
@@ -72,8 +77,12 @@ export default function Voting({ session }) {
   };
 
   useEffect(() => {
+    // Only try to load data if we have a session
     if (session) {
       loadAllData();
+    } else {
+      // No session, stop loading immediately
+      setLoading(false);
     }
   }, [session]);
 
