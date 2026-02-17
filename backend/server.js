@@ -27,7 +27,7 @@ app.get('/api/health', (req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });
 });
 
-// Import routes
+// Import all routes
 import authRoutes from './routes/auth.js';
 import artworkRoutes from './routes/artworks.js';
 import roomRoutes from './routes/rooms.js';
@@ -38,7 +38,7 @@ import searchRoutes from './routes/search.js';
 import articleRoutes from './routes/articles.js';
 import pushRoutes from './routes/pushes.js';
 
-// Use routes
+// Use all routes
 app.use('/api/auth', authRoutes(supabase, supabaseAdmin));
 app.use('/api/artworks', artworkRoutes(supabase, supabaseAdmin));
 app.use('/api/rooms', roomRoutes(supabase));
