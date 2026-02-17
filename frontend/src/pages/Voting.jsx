@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 import { API_URL } from '../lib/api';
@@ -9,34 +9,40 @@ export default function Voting({ session }) {
   const [voted, setVoted] = useState({});
   const [ticketsRemaining, setTicketsRemaining] = useState(5);
   const [filter, setFilter] = useState('all');
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
+  
+  // Prevent multiple simultaneous requests
+  const isFetching = useRef(false);
+  const abortController = useRef(null);
 
-  useEffect(() => {
-    if (session) {
-      loadAllData();
-    }
-  }, [session]);
-
-  const loadAllData = async () => {
-    setLoading(true);
-    await Promise.all([
-      fetchSubmissions(),
-      fetchUserTickets(),
-      fetchVoted()
-    ]);
-    setLoading(false);
-  };
-
+  // Helper function to get token and make authenticated requests
   const fetchWithAuth = async (url, options = {}) => {
+    // Prevent concurrent requests
+    if (isFetching.current) {
+      console.log('Already fetching, skipping...');
+      return null;
+    }
+    
+    // Cancel previous request if exists
+    if (abortController.current) {
+      abortController.current.abort();
+    }
+    
+    abortController.current = new AbortController();
+    isFetching.current = true;
+    
     try {
+      // Get the current session
       const { data: { session } } = await supabase.auth.getSession();
       
       if (!session) {
+        console.log('No session, cannot make authenticated request');
         return null;
       }
 
       const response = await fetch(url, {
         ...options,
+        signal: abortController.current.signal,
         headers: {
           'Authorization': `Bearer ${session.access_token}`,
           'Content-Type': 'application/json',
@@ -44,49 +50,136 @@ export default function Voting({ session }) {
         }
       });
 
-      if (!response.ok) return null;
+      if (!response.ok) {
+        if (response.status === 401) {
+          console.log('Token expired, redirecting to login...');
+          await supabase.auth.signOut();
+          window.location.href = '/login';
+          return null;
+        }
+        console.error(`Request failed with status ${response.status}`);
+        return null;
+      }
+
       return await response.json();
     } catch (error) {
+      if (error.name === 'AbortError') {
+        console.log('Request aborted');
+        return null;
+      }
       console.error('Fetch error:', error);
       return null;
+    } finally {
+      isFetching.current = false;
+      abortController.current = null;
+    }
+  };
+
+  useEffect(() => {
+    // Cleanup on unmount
+    return () => {
+      if (abortController.current) {
+        abortController.current.abort();
+      }
+    };
+  }, []);
+
+  useEffect(() => {
+    if (session) {
+      loadAllData();
+    } else {
+      setLoading(false);
+    }
+  }, [session]);
+
+  const loadAllData = async () => {
+    // Prevent multiple simultaneous loads
+    if (loading) return;
+    
+    setLoading(true);
+    try {
+      await Promise.all([
+        fetchSubmissions(),
+        fetchUserTickets(),
+        fetchVoted()
+      ]);
+    } catch (error) {
+      console.error('Error loading data:', error);
+    } finally {
+      setLoading(false);
     }
   };
 
   const fetchSubmissions = async () => {
-    const data = await fetchWithAuth(`${API_URL}/api/votes/pending`);
-    if (data) setSubmissions(data.pending || []);
+    try {
+      console.log('Fetching submissions...');
+      const data = await fetchWithAuth(`${API_URL}/api/votes/pending`);
+      if (data) {
+        setSubmissions(data.pending || []);
+      }
+    } catch (error) {
+      console.error('Failed to fetch submissions:', error);
+    }
   };
 
   const fetchUserTickets = async () => {
-    const user = await fetchWithAuth(`${API_URL}/api/auth/me`);
-    if (user) setTicketsRemaining(user.voting_tickets || 0);
+    try {
+      const user = await fetchWithAuth(`${API_URL}/api/auth/me`);
+      if (user) {
+        setTicketsRemaining(user.voting_tickets || 0);
+      }
+    } catch (error) {
+      console.error('Failed to fetch tickets:', error);
+    }
   };
 
   const fetchVoted = async () => {
-    const votes = await fetchWithAuth(`${API_URL}/api/votes/my-votes`);
-    if (votes) {
-      const votedMap = {};
-      votes.forEach(v => votedMap[v.artwork_id] = v.vote);
-      setVoted(votedMap);
+    try {
+      const votes = await fetchWithAuth(`${API_URL}/api/votes/my-votes`);
+      if (votes) {
+        const votedMap = {};
+        votes.forEach(v => votedMap[v.artwork_id] = v.vote);
+        setVoted(votedMap);
+      }
+    } catch (error) {
+      console.error('Failed to fetch votes:', error);
     }
   };
 
   const castVote = async (artworkId, voteValue) => {
-    if (ticketsRemaining <= 0) return;
+    if (ticketsRemaining <= 0) {
+      alert('No votes remaining this week');
+      return;
+    }
 
-    const result = await fetchWithAuth(`${API_URL}/api/votes`, {
-      method: 'POST',
-      body: JSON.stringify({ artworkId, vote: voteValue })
-    });
+    try {
+      const result = await fetchWithAuth(`${API_URL}/api/votes`, {
+        method: 'POST',
+        body: JSON.stringify({
+          artworkId,
+          vote: voteValue
+        })
+      });
 
-    if (result) {
-      setVoted({ ...voted, [artworkId]: voteValue });
-      setTicketsRemaining(prev => prev - 1);
-      fetchSubmissions();
+      if (result) {
+        setVoted({ ...voted, [artworkId]: voteValue });
+        setTicketsRemaining(prev => prev - 1);
+        // Refresh submissions to update counts
+        fetchSubmissions();
+      }
+    } catch (error) {
+      console.error('Vote failed:', error);
+      alert(error.message || 'Failed to cast vote');
     }
   };
 
-  // If not logged in, show login prompt immediately (no loading)
+  const filteredSubmissions = submissions.filter(s => {
+    if (filter === 'all') return true;
+    if (filter === 'voted') return voted[s.id] !== undefined;
+    if (filter === 'pending') return voted[s.id] === undefined;
+    return true;
+  });
+
   if (!session) {
     return (
       <div className="voting-container">
@@ -97,7 +190,6 @@ export default function Voting({ session }) {
     );
   }
 
-  // If logged in and loading, show spinner
   if (loading) {
     return (
       <div className="voting-container">
@@ -105,14 +197,6 @@ export default function Voting({ session }) {
       </div>
     );
   }
-
-  // Filter submissions
-  const filteredSubmissions = submissions.filter(s => {
-    if (filter === 'all') return true;
-    if (filter === 'voted') return voted[s.id] !== undefined;
-    if (filter === 'pending') return voted[s.id] === undefined;
-    return true;
-  });
 
   return (
     <div className="voting-container">
