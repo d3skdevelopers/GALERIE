@@ -17,6 +17,12 @@ import Signup from './pages/Signup';
 import AuthCallback from './pages/AuthCallback';
 import Upload from './pages/Upload';
 import EditProfile from './pages/EditProfile';
+
+// New Library pages
+import Library from './pages/Library';
+import ReadArticle from './pages/ReadArticle';
+import WriteArticle from './pages/WriteArticle';
+
 import Navigation from './components/Navigation';
 
 function App() {
@@ -56,6 +62,11 @@ function App() {
             <Route path="/auth/callback" element={<AuthCallback />} />
             <Route path="/upload" element={<Upload session={session} />} />
             <Route path="/edit-profile" element={<EditProfile session={session} />} />
+            
+            {/* New Library routes */}
+            <Route path="/library" element={<Library />} />
+            <Route path="/article/:id" element={<ReadArticle session={session} />} />
+            <Route path="/write" element={<WriteArticle session={session} />} />
           </Routes>
         </main>
       </div>
