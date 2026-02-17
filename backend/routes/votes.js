@@ -10,15 +10,24 @@ export default function voteRoutes(supabase) {
     res.json({ message: 'Votes route is working' });
   });
 
-  // Get artworks needing votes (simplified diagnostic version)
+  // Get artworks needing votes
   router.get('/pending', async (req, res) => {
     try {
       const token = req.headers.authorization?.split(' ')[1];
-      if (!token) throw new Error('Unauthorized');
-
-      const decoded = jwt.verify(token, process.env.JWT_SECRET);
+      console.log('🔑 Token received:', token ? 'yes' : 'no');
       
-      // ULTRA SIMPLE: Get ALL unapproved artworks with profiles
+      if (!token) throw new Error('No token provided');
+
+      let decoded;
+      try {
+        decoded = jwt.verify(token, process.env.JWT_SECRET);
+        console.log('✅ Token valid for user:', decoded.userId);
+      } catch (err) {
+        console.log('❌ Token invalid:', err.message);
+        throw new Error('Invalid token');
+      }
+      
+      // Get ALL unapproved artworks
       const { data, error } = await supabase
         .from('artworks')
         .select(`
@@ -31,7 +40,7 @@ export default function voteRoutes(supabase) {
 
       if (error) throw error;
 
-      console.log('Found artworks:', data?.length || 0);
+      console.log('📦 Found artworks:', data?.length || 0);
       
       res.json({ 
         pending: data || [],
@@ -41,8 +50,8 @@ export default function voteRoutes(supabase) {
         }
       });
     } catch (error) {
-      console.error('Pending route error:', error);
-      res.status(400).json({ error: error.message });
+      console.error('❌ Pending route error:', error.message);
+      res.status(401).json({ error: error.message });
     }
   });
 
@@ -50,7 +59,7 @@ export default function voteRoutes(supabase) {
   router.post('/', async (req, res) => {
     try {
       const token = req.headers.authorization?.split(' ')[1];
-      if (!token) throw new Error('Unauthorized');
+      if (!token) throw new Error('No token');
 
       const decoded = jwt.verify(token, process.env.JWT_SECRET);
       const { artworkId, vote } = req.body;
@@ -90,7 +99,7 @@ export default function voteRoutes(supabase) {
 
       if (voteError) throw voteError;
 
-      // Update artwork vote counts using RPC
+      // Update artwork vote counts
       if (vote) {
         await supabase.rpc('increment_approval', { artwork_id: artworkId });
       } else {
@@ -99,6 +108,7 @@ export default function voteRoutes(supabase) {
 
       res.json({ success: true });
     } catch (error) {
+      console.error('Vote error:', error.message);
       res.status(400).json({ error: error.message });
     }
   });
@@ -107,7 +117,7 @@ export default function voteRoutes(supabase) {
   router.get('/my-votes', async (req, res) => {
     try {
       const token = req.headers.authorization?.split(' ')[1];
-      if (!token) throw new Error('Unauthorized');
+      if (!token) throw new Error('No token');
 
       const decoded = jwt.verify(token, process.env.JWT_SECRET);
       
@@ -119,7 +129,8 @@ export default function voteRoutes(supabase) {
       if (error) throw error;
       res.json(data || []);
     } catch (error) {
-      res.status(400).json({ error: error.message });
+      console.error('My votes error:', error.message);
+      res.status(401).json({ error: error.message });
     }
   });
 
