@@ -14,13 +14,28 @@ export default function Voting({ session }) {
   // Helper function to get token and make authenticated requests
   const fetchWithAuth = async (url, options = {}) => {
     try {
-      const { data: sessionData } = await supabase.auth.getSession();
-      const token = sessionData.session?.access_token;
+      // Get the current session
+      const { data: { session } } = await supabase.auth.getSession();
+      
+      let token = session?.access_token;
       
       if (!token) {
-        console.error('No auth token available');
+        console.log('No active session, trying to refresh...');
+        // Try to refresh the session
+        const { data: refreshData, error: refreshError } = await supabase.auth.refreshSession();
+        if (refreshError) {
+          console.error('Session refresh failed:', refreshError);
+          return null;
+        }
+        token = refreshData.session?.access_token;
+      }
+
+      if (!token) {
+        console.error('No token available after refresh');
         return null;
       }
+
+      console.log('Sending request with token:', token.substring(0, 20) + '...');
 
       const response = await fetch(url, {
         ...options,
@@ -33,6 +48,19 @@ export default function Voting({ session }) {
 
       if (!response.ok) {
         console.error(`Request failed with status ${response.status}`);
+        
+        if (response.status === 401) {
+          // Token might be expired, try to refresh once more
+          console.log('Token rejected, attempting refresh...');
+          const { data: refreshData } = await supabase.auth.refreshSession();
+          if (refreshData.session?.access_token) {
+            // Retry with new token
+            return fetchWithAuth(url, options);
+          }
+        }
+        
+        const errorText = await response.text();
+        console.error('Error response:', errorText);
         return null;
       }
 
@@ -61,7 +89,9 @@ export default function Voting({ session }) {
 
   const fetchSubmissions = async () => {
     try {
+      console.log('Fetching submissions from:', `${API_URL}/api/votes/pending`);
       const data = await fetchWithAuth(`${API_URL}/api/votes/pending`);
+      console.log('Submissions response:', data);
       if (data) {
         setSubmissions(data.pending || []);
       }
