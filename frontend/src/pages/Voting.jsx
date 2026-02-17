@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
+import { API_URL } from '../lib/api';
 import './Voting.css';
 
 export default function Voting({ session }) {
@@ -8,6 +9,7 @@ export default function Voting({ session }) {
   const [voted, setVoted] = useState({});
   const [ticketsRemaining, setTicketsRemaining] = useState(5);
   const [filter, setFilter] = useState('all');
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     if (session) {
@@ -17,61 +19,98 @@ export default function Voting({ session }) {
     }
   }, [session]);
 
-  async function fetchSubmissions() {
-    const { data } = await supabase
-      .from('artworks')
-      .select('*, profiles(username)')
-      .eq('is_approved', false)
-      .gt('voting_ends', new Date().toISOString())
-      .order('voting_ends', { ascending: true });
-    
-    setSubmissions(data || []);
-  }
+  const fetchSubmissions = async () => {
+    try {
+      const { data: sessionData } = await supabase.auth.getSession();
+      const token = sessionData.session?.access_token;
 
-  async function fetchUserTickets() {
-    const { data } = await supabase
-      .from('profiles')
-      .select('voting_tickets')
-      .eq('id', session.user.id)
-      .single();
-    
-    setTicketsRemaining(data?.voting_tickets || 0);
-  }
+      const response = await fetch(`${API_URL}/api/votes/pending`, {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+      
+      const data = await response.json();
+      setSubmissions(data.pending || []);
+      setLoading(false);
+    } catch (error) {
+      console.error('Failed to fetch submissions:', error);
+      setLoading(false);
+    }
+  };
 
-  async function fetchVoted() {
-    const { data } = await supabase
-      .from('votes')
-      .select('artwork_id, vote')
-      .eq('voter_id', session.user.id);
-    
-    const votedMap = {};
-    data?.forEach(v => votedMap[v.artwork_id] = v.vote);
-    setVoted(votedMap);
-  }
+  const fetchUserTickets = async () => {
+    try {
+      const { data: sessionData } = await supabase.auth.getSession();
+      const token = sessionData.session?.access_token;
 
-  async function castVote(artworkId, voteValue) {
+      const response = await fetch(`${API_URL}/api/auth/me`, {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+      
+      const user = await response.json();
+      setTicketsRemaining(user.voting_tickets || 0);
+    } catch (error) {
+      console.error('Failed to fetch tickets:', error);
+    }
+  };
+
+  const fetchVoted = async () => {
+    try {
+      const { data: sessionData } = await supabase.auth.getSession();
+      const token = sessionData.session?.access_token;
+
+      const response = await fetch(`${API_URL}/api/votes/my-votes`, {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+      
+      const votes = await response.json();
+      const votedMap = {};
+      votes.forEach(v => votedMap[v.artwork_id] = v.vote);
+      setVoted(votedMap);
+    } catch (error) {
+      console.error('Failed to fetch votes:', error);
+    }
+  };
+
+  const castVote = async (artworkId, voteValue) => {
     if (ticketsRemaining <= 0) return;
 
-    const { error } = await supabase
-      .from('votes')
-      .insert({
-        artwork_id: artworkId,
-        voter_id: session.user.id,
-        vote: voteValue
+    try {
+      const { data: sessionData } = await supabase.auth.getSession();
+      const token = sessionData.session?.access_token;
+
+      const response = await fetch(`${API_URL}/api/votes`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          artworkId,
+          vote: voteValue
+        })
       });
 
-    if (!error) {
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.error);
+      }
+
       setVoted({ ...voted, [artworkId]: voteValue });
       setTicketsRemaining(ticketsRemaining - 1);
       
-      // Update vote counts
-      if (voteValue) {
-        await supabase.rpc('increment_approval', { artwork_id: artworkId });
-      } else {
-        await supabase.rpc('increment_rejection', { artwork_id: artworkId });
-      }
+      // Refresh submissions to update counts
+      fetchSubmissions();
+    } catch (error) {
+      console.error('Vote failed:', error);
+      alert(error.message);
     }
-  }
+  };
 
   const filteredSubmissions = submissions.filter(s => {
     if (filter === 'all') return true;
@@ -86,6 +125,14 @@ export default function Voting({ session }) {
         <h1>voting</h1>
         <p className="voting-description">sign in to vote</p>
         <Link to="/login" className="signin-prompt">sign in →</Link>
+      </div>
+    );
+  }
+
+  if (loading) {
+    return (
+      <div className="voting-container">
+        <div className="loading">loading...</div>
       </div>
     );
   }
