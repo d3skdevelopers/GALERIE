@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
+import { API_URL } from '../lib/api';
 import './ArtistProfile.css';
 
 export default function ArtistProfile({ session }) {
@@ -9,6 +10,7 @@ export default function ArtistProfile({ session }) {
   const [artworks, setArtworks] = useState([]);
   const [exhibitions, setExhibitions] = useState([]);
   const [kinship, setKinship] = useState([]);
+  const [articles, setArticles] = useState([]);
   const [activeTab, setActiveTab] = useState('works');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -72,6 +74,12 @@ export default function ArtistProfile({ session }) {
 
           setKinship(kin || []);
         }
+
+        // Get their articles
+        const res = await fetch(`${API_URL}/api/articles/featured`);
+        const allArticles = await res.json();
+        const userArticles = allArticles.filter(a => a.author_id === profile.id);
+        setArticles(userArticles);
       }
     } catch (err) {
       console.error('Error fetching artist:', err);
@@ -131,6 +139,7 @@ export default function ArtistProfile({ session }) {
             <span>{artworks.length} works</span>
             <span>{exhibitions.length} exhibitions curated</span>
             <span>{artist.voting_tickets} voting tickets/week</span>
+            <span>{articles.length} articles</span>
           </div>
           {session?.user?.id === artist.id && (
             <div className="profile-actions">
@@ -146,15 +155,19 @@ export default function ArtistProfile({ session }) {
         <button 
           className={activeTab === 'works' ? 'active' : ''} 
           onClick={() => setActiveTab('works')}
-        >works</button>
+        >works ({artworks.length})</button>
         <button 
           className={activeTab === 'exhibitions' ? 'active' : ''} 
           onClick={() => setActiveTab('exhibitions')}
-        >exhibitions</button>
+        >exhibitions ({exhibitions.length})</button>
         <button 
           className={activeTab === 'kinship' ? 'active' : ''} 
           onClick={() => setActiveTab('kinship')}
         >kinship</button>
+        <button 
+          className={activeTab === 'articles' ? 'active' : ''} 
+          onClick={() => setActiveTab('articles')}
+        >articles ({articles.length})</button>
       </div>
 
       <div className="profile-content">
@@ -208,6 +221,26 @@ export default function ArtistProfile({ session }) {
                     @{k.artwork_b?.profiles?.username}
                   </Link>
                 </div>
+              ))
+            )}
+          </div>
+        )}
+
+        {activeTab === 'articles' && (
+          <div className="articles-list">
+            {articles.length === 0 ? (
+              <p className="no-content">no articles yet</p>
+            ) : (
+              articles.map(article => (
+                <Link to={`/article/${article.id}`} key={article.id} className="article-card">
+                  <div className="article-preview">✦</div>
+                  <div className="article-info">
+                    <h3>{article.title}</h3>
+                    <p className="article-meta">
+                      {article.push_count} pushes · {new Date(article.published_at).toLocaleDateString()}
+                    </p>
+                  </div>
+                </Link>
               ))
             )}
           </div>
