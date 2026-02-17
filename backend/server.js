@@ -26,11 +26,13 @@ import authRoutes from './routes/auth.js';
 import artworkRoutes from './routes/artworks.js';
 import roomRoutes from './routes/rooms.js';
 import exhibitionRoutes from './routes/exhibitions.js';
+import voteRoutes from './routes/votes.js';
 
 // Use routes
 app.use('/api/auth', authRoutes(supabase, supabaseAdmin));
 app.use('/api/artworks', artworkRoutes(supabase, supabaseAdmin));
 app.use('/api/rooms', roomRoutes(supabase));
 app.use('/api/exhibitions', exhibitionRoutes(supabase));
+app.use('/api/votes', voteRoutes(supabase));
 
 export default app;
