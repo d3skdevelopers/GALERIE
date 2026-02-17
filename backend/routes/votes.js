@@ -10,48 +10,58 @@ export default function voteRoutes(supabase) {
     res.json({ message: 'Votes route is working' });
   });
 
-  // Get artworks needing votes
+  // Get artworks needing votes (diagnostic version)
   router.get('/pending', async (req, res) => {
     try {
       const token = req.headers.authorization?.split(' ')[1];
-      console.log('🔑 Token received:', token ? 'yes' : 'no');
-      
-      if (!token) throw new Error('No token provided');
+      if (!token) throw new Error('No token');
 
-      let decoded;
-      try {
-        decoded = jwt.verify(token, process.env.JWT_SECRET);
-        console.log('✅ Token valid for user:', decoded.userId);
-      } catch (err) {
-        console.log('❌ Token invalid:', err.message);
-        throw new Error('Invalid token');
-      }
+      const decoded = jwt.verify(token, process.env.JWT_SECRET);
       
-      // Get ALL unapproved artworks
-      const { data, error } = await supabase
+      // STEP 1: Get ALL artworks (no filters)
+      const { data: allArtworks, error: err1 } = await supabase
+        .from('artworks')
+        .select('*');
+
+      // STEP 2: Get only unapproved artworks
+      const { data: unapprovedArtworks, error: err2 } = await supabase
+        .from('artworks')
+        .select('*')
+        .eq('is_approved', false);
+
+      // STEP 3: Get unapproved with profiles (current broken version)
+      const { data: withProfiles, error: err3 } = await supabase
         .from('artworks')
         .select(`
           *,
-          profiles!artworks_artist_id_fkey (
+          profiles (
             username
           )
         `)
         .eq('is_approved', false);
 
-      if (error) throw error;
+      // STEP 4: Get unapproved without profiles (test)
+      const { data: withoutProfiles, error: err4 } = await supabase
+        .from('artworks')
+        .select('*')
+        .eq('is_approved', false);
 
-      console.log('📦 Found artworks:', data?.length || 0);
-      
-      res.json({ 
-        pending: data || [],
+      res.json({
         debug: {
-          user_id: decoded.userId,
-          count: data?.length || 0
+          your_id: decoded.userId,
+          all_count: allArtworks?.length || 0,
+          unapproved_count: unapprovedArtworks?.length || 0,
+          with_profiles_count: withProfiles?.length || 0,
+          without_profiles_count: withoutProfiles?.length || 0,
+          all_artworks: allArtworks || [],
+          unapproved_artworks: unapprovedArtworks || [],
+          with_profiles: withProfiles || [],
+          without_profiles: withoutProfiles || []
         }
       });
     } catch (error) {
-      console.error('❌ Pending route error:', error.message);
-      res.status(401).json({ error: error.message });
+      console.error('Pending route error:', error);
+      res.status(400).json({ error: error.message });
     }
   });
 
