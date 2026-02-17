@@ -1,0 +1,151 @@
+.edit-profile-container {
+  max-width: 600px;
+  margin: 0 auto;
+  padding: 3rem 2rem;
+}
+
+.edit-profile-container h1 {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 3rem;
+  font-weight: 300;
+  margin-bottom: 2rem;
+  text-align: center;
+}
+
+.avatar-section {
+  display: flex;
+  align-items: center;
+  gap: 2rem;
+  margin-bottom: 2rem;
+  padding: 2rem;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+}
+
+.avatar-preview {
+  width: 100px;
+  height: 100px;
+  border-radius: 50%;
+  overflow: hidden;
+  background: var(--bg-primary);
+  border: 2px solid var(--accent);
+}
+
+.avatar-preview img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.avatar-placeholder {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 2rem;
+  color: var(--accent);
+  background: var(--bg-primary);
+}
+
+.upload-button {
+  display: inline-block;
+  padding: 0.75rem 1.5rem;
+  background: var(--accent);
+  color: black;
+  border: none;
+  cursor: pointer;
+  font-size: 0.9rem;
+  transition: opacity 0.2s;
+}
+
+.upload-button:hover {
+  opacity: 0.9;
+}
+
+.upload-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.edit-profile-form {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  padding: 2rem;
+}
+
+.edit-profile-form .form-group {
+  margin-bottom: 1.5rem;
+}
+
+.edit-profile-form label {
+  display: block;
+  margin-bottom: 0.5rem;
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+}
+
+.edit-profile-form input,
+.edit-profile-form textarea {
+  width: 100%;
+  padding: 0.75rem;
+  background: var(--bg-primary);
+  border: 1px solid var(--border);
+  color: var(--text-primary);
+  font-family: inherit;
+  font-size: 1rem;
+}
+
+.edit-profile-form small {
+  display: block;
+  margin-top: 0.25rem;
+  color: var(--text-secondary);
+  font-size: 0.8rem;
+}
+
+.form-actions {
+  display: flex;
+  gap: 1rem;
+  margin-top: 2rem;
+}
+
+.save-button,
+.cancel-button {
+  flex: 1;
+  padding: 0.75rem;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.save-button {
+  background: var(--accent);
+  border: none;
+  color: black;
+}
+
+.save-button:hover {
+  opacity: 0.9;
+}
+
+.cancel-button {
+  background: none;
+  border: 1px solid var(--border);
+  color: var(--text-primary);
+}
+
+.cancel-button:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.save-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.error-message {
+  color: #ff4444;
+  margin-bottom: 1rem;
+  text-align: center;
+}
