@@ -16,6 +16,7 @@ import Login from './pages/Login';
 import Signup from './pages/Signup';
 import AuthCallback from './pages/AuthCallback';
 import Upload from './pages/Upload';
+import EditProfile from './pages/EditProfile';
 import Navigation from './components/Navigation';
 
 function App() {
@@ -45,7 +46,7 @@ function App() {
             <Route path="/" element={<Foyer session={session} />} />
             <Route path="/room/:id" element={<Room />} />
             <Route path="/artwork/:id" element={<Focus />} />
-            <Route path="/artist/:username" element={<ArtistProfile />} />
+            <Route path="/artist/:username" element={<ArtistProfile session={session} />} />
             <Route path="/search" element={<SearchDesk />} />
             <Route path="/voting" element={<Voting session={session} />} />
             <Route path="/create-exhibition" element={<CreateExhibition session={session} />} />
@@ -54,6 +55,7 @@ function App() {
             <Route path="/signup" element={<Signup />} />
             <Route path="/auth/callback" element={<AuthCallback />} />
             <Route path="/upload" element={<Upload session={session} />} />
+            <Route path="/edit-profile" element={<EditProfile session={session} />} />
           </Routes>
         </main>
       </div>
