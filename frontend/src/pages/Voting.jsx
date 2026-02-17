@@ -1,10 +1,11 @@
 import { useState, useEffect, useRef } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 import { API_URL } from '../lib/api';
 import './Voting.css';
 
 export default function Voting({ session }) {
+  const navigate = useNavigate();
   const [submissions, setSubmissions] = useState([]);
   const [voted, setVoted] = useState({});
   const [ticketsRemaining, setTicketsRemaining] = useState(5);
@@ -36,7 +37,8 @@ export default function Voting({ session }) {
       const { data: { session } } = await supabase.auth.getSession();
       
       if (!session) {
-        console.log('No session, cannot make authenticated request');
+        console.log('No session, redirecting to login...');
+        navigate('/login');
         return null;
       }
 
@@ -50,13 +52,39 @@ export default function Voting({ session }) {
         }
       });
 
-      if (!response.ok) {
-        if (response.status === 401) {
-          console.log('Token expired, redirecting to login...');
+      // If unauthorized, try to refresh the token
+      if (response.status === 401) {
+        console.log('Token expired, attempting refresh...');
+        
+        const { data: refreshData, error: refreshError } = await supabase.auth.refreshSession();
+        
+        if (refreshError || !refreshData.session) {
+          console.log('Refresh failed, redirecting to login...');
           await supabase.auth.signOut();
-          window.location.href = '/login';
+          navigate('/login');
           return null;
         }
+
+        // Retry with new token
+        const retryResponse = await fetch(url, {
+          ...options,
+          signal: abortController.current.signal,
+          headers: {
+            'Authorization': `Bearer ${refreshData.session.access_token}`,
+            'Content-Type': 'application/json',
+            ...options.headers
+          }
+        });
+
+        if (!retryResponse.ok) {
+          console.error(`Retry failed with status ${retryResponse.status}`);
+          return null;
+        }
+
+        return await retryResponse.json();
+      }
+
+      if (!response.ok) {
         console.error(`Request failed with status ${response.status}`);
         return null;
       }
@@ -75,14 +103,32 @@ export default function Voting({ session }) {
     }
   };
 
+  // Check session on mount and when it changes
   useEffect(() => {
-    // Cleanup on unmount
-    return () => {
-      if (abortController.current) {
-        abortController.current.abort();
+    const checkSession = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        navigate('/login');
       }
     };
-  }, []);
+    
+    checkSession();
+  }, [navigate]);
+
+  // Listen for auth changes
+  useEffect(() => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      console.log('Auth event:', event);
+      if (event === 'SIGNED_OUT') {
+        navigate('/login');
+      } else if (event === 'TOKEN_REFRESHED') {
+        // Refresh the page data
+        loadAllData();
+      }
+    });
+
+    return () => subscription.unsubscribe();
+  }, [navigate]);
 
   useEffect(() => {
     if (session) {
@@ -90,6 +136,13 @@ export default function Voting({ session }) {
     } else {
       setLoading(false);
     }
+
+    // Cleanup on unmount
+    return () => {
+      if (abortController.current) {
+        abortController.current.abort();
+      }
+    };
   }, [session]);
 
   const loadAllData = async () => {
