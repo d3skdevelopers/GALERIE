@@ -16,7 +16,7 @@ export default function Voting({ session }) {
   const isFetching = useRef(false);
   const abortController = useRef(null);
 
-  // Helper function to get token and make authenticated requests
+  // Helper  function to get token and make authenticated requests
   const fetchWithAuth = async (url, options = {}) => {
     // Prevent concurrent requests
     if (isFetching.current) {
