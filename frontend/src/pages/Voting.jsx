@@ -9,80 +9,11 @@ export default function Voting({ session }) {
   const [voted, setVoted] = useState({});
   const [ticketsRemaining, setTicketsRemaining] = useState(5);
   const [filter, setFilter] = useState('all');
-  const [loading, setLoading] = useState(true);
-
-  // Helper function to get token and make authenticated requests
-  const fetchWithAuth = async (url, options = {}) => {
-    try {
-      // Get the current session
-      const { data: { session } } = await supabase.auth.getSession();
-      
-      if (!session) {
-        console.log('No session, cannot make authenticated request');
-        return null;
-      }
-      
-      let token = session?.access_token;
-      
-      if (!token) {
-        console.log('No active session, trying to refresh...');
-        // Try to refresh the session
-        const { data: refreshData, error: refreshError } = await supabase.auth.refreshSession();
-        if (refreshError) {
-          console.error('Session refresh failed:', refreshError);
-          return null;
-        }
-        token = refreshData.session?.access_token;
-      }
-
-      if (!token) {
-        console.error('No token available after refresh');
-        return null;
-      }
-
-      console.log('Sending request with token:', token.substring(0, 20) + '...');
-
-      const response = await fetch(url, {
-        ...options,
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json',
-          ...options.headers
-        }
-      });
-
-      if (!response.ok) {
-        console.error(`Request failed with status ${response.status}`);
-        
-        if (response.status === 401) {
-          // Token might be expired, try to refresh once more
-          console.log('Token rejected, attempting refresh...');
-          const { data: refreshData } = await supabase.auth.refreshSession();
-          if (refreshData.session?.access_token) {
-            // Retry with new token
-            return fetchWithAuth(url, options);
-          }
-        }
-        
-        const errorText = await response.text();
-        console.error('Error response:', errorText);
-        return null;
-      }
-
-      return await response.json();
-    } catch (error) {
-      console.error('Fetch error:', error);
-      return null;
-    }
-  };
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    // Only try to load data if we have a session
     if (session) {
       loadAllData();
-    } else {
-      // No session, stop loading immediately
-      setLoading(false);
     }
   }, [session]);
 
@@ -96,76 +27,66 @@ export default function Voting({ session }) {
     setLoading(false);
   };
 
-  const fetchSubmissions = async () => {
+  const fetchWithAuth = async (url, options = {}) => {
     try {
-      console.log('Fetching submissions from:', `${API_URL}/api/votes/pending`);
-      const data = await fetchWithAuth(`${API_URL}/api/votes/pending`);
-      console.log('Submissions response:', data);
-      if (data) {
-        setSubmissions(data.pending || []);
+      const { data: { session } } = await supabase.auth.getSession();
+      
+      if (!session) {
+        return null;
       }
+
+      const response = await fetch(url, {
+        ...options,
+        headers: {
+          'Authorization': `Bearer ${session.access_token}`,
+          'Content-Type': 'application/json',
+          ...options.headers
+        }
+      });
+
+      if (!response.ok) return null;
+      return await response.json();
     } catch (error) {
-      console.error('Failed to fetch submissions:', error);
+      console.error('Fetch error:', error);
+      return null;
     }
+  };
+
+  const fetchSubmissions = async () => {
+    const data = await fetchWithAuth(`${API_URL}/api/votes/pending`);
+    if (data) setSubmissions(data.pending || []);
   };
 
   const fetchUserTickets = async () => {
-    try {
-      const user = await fetchWithAuth(`${API_URL}/api/auth/me`);
-      if (user) {
-        setTicketsRemaining(user.voting_tickets || 0);
-      }
-    } catch (error) {
-      console.error('Failed to fetch tickets:', error);
-    }
+    const user = await fetchWithAuth(`${API_URL}/api/auth/me`);
+    if (user) setTicketsRemaining(user.voting_tickets || 0);
   };
 
   const fetchVoted = async () => {
-    try {
-      const votes = await fetchWithAuth(`${API_URL}/api/votes/my-votes`);
-      if (votes) {
-        const votedMap = {};
-        votes.forEach(v => votedMap[v.artwork_id] = v.vote);
-        setVoted(votedMap);
-      }
-    } catch (error) {
-      console.error('Failed to fetch votes:', error);
+    const votes = await fetchWithAuth(`${API_URL}/api/votes/my-votes`);
+    if (votes) {
+      const votedMap = {};
+      votes.forEach(v => votedMap[v.artwork_id] = v.vote);
+      setVoted(votedMap);
     }
   };
 
   const castVote = async (artworkId, voteValue) => {
-    if (ticketsRemaining <= 0) {
-      alert('No votes remaining this week');
-      return;
-    }
+    if (ticketsRemaining <= 0) return;
 
-    try {
-      const result = await fetchWithAuth(`${API_URL}/api/votes`, {
-        method: 'POST',
-        body: JSON.stringify({
-          artworkId,
-          vote: voteValue
-        })
-      });
+    const result = await fetchWithAuth(`${API_URL}/api/votes`, {
+      method: 'POST',
+      body: JSON.stringify({ artworkId, vote: voteValue })
+    });
 
-      if (result) {
-        setVoted({ ...voted, [artworkId]: voteValue });
-        setTicketsRemaining(prev => prev - 1);
-        await fetchSubmissions(); // Refresh to update counts
-      }
-    } catch (error) {
-      console.error('Vote failed:', error);
-      alert(error.message || 'Failed to cast vote');
+    if (result) {
+      setVoted({ ...voted, [artworkId]: voteValue });
+      setTicketsRemaining(prev => prev - 1);
+      fetchSubmissions();
     }
   };
 
-  const filteredSubmissions = submissions.filter(s => {
-    if (filter === 'all') return true;
-    if (filter === 'voted') return voted[s.id] !== undefined;
-    if (filter === 'pending') return voted[s.id] === undefined;
-    return true;
-  });
-
+  // If not logged in, show login prompt immediately (no loading)
   if (!session) {
     return (
       <div className="voting-container">
@@ -176,6 +97,7 @@ export default function Voting({ session }) {
     );
   }
 
+  // If logged in and loading, show spinner
   if (loading) {
     return (
       <div className="voting-container">
@@ -183,6 +105,14 @@ export default function Voting({ session }) {
       </div>
     );
   }
+
+  // Filter submissions
+  const filteredSubmissions = submissions.filter(s => {
+    if (filter === 'all') return true;
+    if (filter === 'voted') return voted[s.id] !== undefined;
+    if (filter === 'pending') return voted[s.id] === undefined;
+    return true;
+  });
 
   return (
     <div className="voting-container">
