@@ -35,6 +35,8 @@ import exhibitionRoutes from './routes/exhibitions.js';
 import voteRoutes from './routes/votes.js';
 import kinshipRoutes from './routes/kinship.js';
 import searchRoutes from './routes/search.js';
+import articleRoutes from './routes/articles.js';
+import pushRoutes from './routes/pushes.js';
 
 // Use routes
 app.use('/api/auth', authRoutes(supabase, supabaseAdmin));
@@ -44,5 +46,21 @@ app.use('/api/exhibitions', exhibitionRoutes(supabase));
 app.use('/api/votes', voteRoutes(supabase));
 app.use('/api/kinship', kinshipRoutes(supabase));
 app.use('/api/search', searchRoutes(supabase));
+app.use('/api/articles', articleRoutes(supabase));
+app.use('/api/pushes', pushRoutes(supabase));
+
+// 404 handler
+app.use((req, res) => {
+  res.status(404).json({ error: 'Route not found' });
+});
+
+// Error handler
+app.use((err, req, res, next) => {
+  console.error('Server error:', err);
+  res.status(500).json({ 
+    error: 'Internal server error',
+    message: err.message 
+  });
+});
 
 export default app;
