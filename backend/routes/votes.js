@@ -1,17 +1,30 @@
+import express from 'express';
+import jwt from 'jsonwebtoken';
+
+const router = express.Router();
+
 export default function voteRoutes(supabase) {
-  const router = express.Router();
+  
+  // Test route
+  router.get('/test', (req, res) => {
+    res.json({ message: 'Votes route is working' });
+  });
 
   // Get artworks needing votes
   router.get('/pending', async (req, res) => {
-    const { data, error } = await supabase
-      .from('artworks')
-      .select('*')
-      .eq('is_approved', false)
-      .gt('voting_ends', new Date().toISOString())
-      .order('voting_ends', { ascending: true });
+    try {
+      const { data, error } = await supabase
+        .from('artworks')
+        .select('*')
+        .eq('is_approved', false)
+        .gt('voting_ends', new Date().toISOString())
+        .order('voting_ends', { ascending: true });
 
-    if (error) return res.status(400).json({ error });
-    res.json(data);
+      if (error) throw error;
+      res.json(data || []);
+    } catch (error) {
+      res.status(400).json({ error: error.message });
+    }
   });
 
   // Cast vote
@@ -21,7 +34,7 @@ export default function voteRoutes(supabase) {
       if (!token) throw new Error('Unauthorized');
 
       const decoded = jwt.verify(token, process.env.JWT_SECRET);
-      const { artworkId, vote } = req.body; // vote = true (yes) or false (no)
+      const { artworkId, vote } = req.body;
 
       // Check if already voted
       const { data: existing } = await supabase
@@ -52,6 +65,26 @@ export default function voteRoutes(supabase) {
       }
 
       res.json({ success: true });
+    } catch (error) {
+      res.status(400).json({ error: error.message });
+    }
+  });
+
+  // Get user's voting history
+  router.get('/my-votes', async (req, res) => {
+    try {
+      const token = req.headers.authorization?.split(' ')[1];
+      if (!token) throw new Error('Unauthorized');
+
+      const decoded = jwt.verify(token, process.env.JWT_SECRET);
+      
+      const { data, error } = await supabase
+        .from('votes')
+        .select('*, artworks(title)')
+        .eq('voter_id', decoded.userId);
+
+      if (error) throw error;
+      res.json(data || []);
     } catch (error) {
       res.status(400).json({ error: error.message });
     }
