@@ -11,47 +11,71 @@ export default function Voting({ session }) {
   const [filter, setFilter] = useState('all');
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    if (session) {
-      fetchSubmissions();
-      fetchUserTickets();
-      fetchVoted();
-    }
-  }, [session]);
-
-  const fetchSubmissions = async () => {
+  // Helper function to get token and make authenticated requests
+  const fetchWithAuth = async (url, options = {}) => {
     try {
       const { data: sessionData } = await supabase.auth.getSession();
       const token = sessionData.session?.access_token;
+      
+      if (!token) {
+        console.error('No auth token available');
+        return null;
+      }
 
-      const response = await fetch(`${API_URL}/api/votes/pending`, {
+      const response = await fetch(url, {
+        ...options,
         headers: {
-          'Authorization': `Bearer ${token}`
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+          ...options.headers
         }
       });
-      
-      const data = await response.json();
-      setSubmissions(data.pending || []);
-      setLoading(false);
+
+      if (!response.ok) {
+        console.error(`Request failed with status ${response.status}`);
+        return null;
+      }
+
+      return await response.json();
+    } catch (error) {
+      console.error('Fetch error:', error);
+      return null;
+    }
+  };
+
+  useEffect(() => {
+    if (session) {
+      loadAllData();
+    }
+  }, [session]);
+
+  const loadAllData = async () => {
+    setLoading(true);
+    await Promise.all([
+      fetchSubmissions(),
+      fetchUserTickets(),
+      fetchVoted()
+    ]);
+    setLoading(false);
+  };
+
+  const fetchSubmissions = async () => {
+    try {
+      const data = await fetchWithAuth(`${API_URL}/api/votes/pending`);
+      if (data) {
+        setSubmissions(data.pending || []);
+      }
     } catch (error) {
       console.error('Failed to fetch submissions:', error);
-      setLoading(false);
     }
   };
 
   const fetchUserTickets = async () => {
     try {
-      const { data: sessionData } = await supabase.auth.getSession();
-      const token = sessionData.session?.access_token;
-
-      const response = await fetch(`${API_URL}/api/auth/me`, {
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
-      });
-      
-      const user = await response.json();
-      setTicketsRemaining(user.voting_tickets || 0);
+      const user = await fetchWithAuth(`${API_URL}/api/auth/me`);
+      if (user) {
+        setTicketsRemaining(user.voting_tickets || 0);
+      }
     } catch (error) {
       console.error('Failed to fetch tickets:', error);
     }
@@ -59,56 +83,40 @@ export default function Voting({ session }) {
 
   const fetchVoted = async () => {
     try {
-      const { data: sessionData } = await supabase.auth.getSession();
-      const token = sessionData.session?.access_token;
-
-      const response = await fetch(`${API_URL}/api/votes/my-votes`, {
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
-      });
-      
-      const votes = await response.json();
-      const votedMap = {};
-      votes.forEach(v => votedMap[v.artwork_id] = v.vote);
-      setVoted(votedMap);
+      const votes = await fetchWithAuth(`${API_URL}/api/votes/my-votes`);
+      if (votes) {
+        const votedMap = {};
+        votes.forEach(v => votedMap[v.artwork_id] = v.vote);
+        setVoted(votedMap);
+      }
     } catch (error) {
       console.error('Failed to fetch votes:', error);
     }
   };
 
   const castVote = async (artworkId, voteValue) => {
-    if (ticketsRemaining <= 0) return;
+    if (ticketsRemaining <= 0) {
+      alert('No votes remaining this week');
+      return;
+    }
 
     try {
-      const { data: sessionData } = await supabase.auth.getSession();
-      const token = sessionData.session?.access_token;
-
-      const response = await fetch(`${API_URL}/api/votes`, {
+      const result = await fetchWithAuth(`${API_URL}/api/votes`, {
         method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        },
         body: JSON.stringify({
           artworkId,
           vote: voteValue
         })
       });
 
-      if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.error);
+      if (result) {
+        setVoted({ ...voted, [artworkId]: voteValue });
+        setTicketsRemaining(prev => prev - 1);
+        await fetchSubmissions(); // Refresh to update counts
       }
-
-      setVoted({ ...voted, [artworkId]: voteValue });
-      setTicketsRemaining(ticketsRemaining - 1);
-      
-      // Refresh submissions to update counts
-      fetchSubmissions();
     } catch (error) {
       console.error('Vote failed:', error);
-      alert(error.message);
+      alert(error.message || 'Failed to cast vote');
     }
   };
 
@@ -163,41 +171,47 @@ export default function Voting({ session }) {
       </div>
 
       <div className="submissions-list">
-        {filteredSubmissions.map(artwork => (
-          <div key={artwork.id} className="submission-card">
-            <div className="submission-preview">✦</div>
-            <div className="submission-info">
-              <div className="submission-header">
-                <h3>{artwork.title}</h3>
-                <span className="submission-artist">@{artwork.profiles?.username}</span>
-              </div>
-              <p className="submission-description">{artwork.description}</p>
-              <div className="submission-meta">
-                <span>expires: {new Date(artwork.voting_ends).toLocaleDateString()}</span>
-                <span>✓ {artwork.approval_votes || 0}</span>
-                <span>✗ {artwork.rejection_votes || 0}</span>
-              </div>
-              {voted[artwork.id] === undefined ? (
-                <div className="vote-actions">
-                  <button 
-                    className="vote-yes" 
-                    onClick={() => castVote(artwork.id, true)}
-                    disabled={ticketsRemaining <= 0}
-                  >✓ yes</button>
-                  <button 
-                    className="vote-no" 
-                    onClick={() => castVote(artwork.id, false)}
-                    disabled={ticketsRemaining <= 0}
-                  >✗ no</button>
-                </div>
-              ) : (
-                <div className="voted-indicator">
-                  you voted {voted[artwork.id] ? '✓ yes' : '✗ no'}
-                </div>
-              )}
-            </div>
+        {filteredSubmissions.length === 0 ? (
+          <div className="no-submissions">
+            <p>No artworks waiting for votes</p>
           </div>
-        ))}
+        ) : (
+          filteredSubmissions.map(artwork => (
+            <div key={artwork.id} className="submission-card">
+              <div className="submission-preview">✦</div>
+              <div className="submission-info">
+                <div className="submission-header">
+                  <h3>{artwork.title}</h3>
+                  <span className="submission-artist">@{artwork.profiles?.username}</span>
+                </div>
+                <p className="submission-description">{artwork.description}</p>
+                <div className="submission-meta">
+                  <span>expires: {new Date(artwork.voting_ends).toLocaleDateString()}</span>
+                  <span>✓ {artwork.approval_votes || 0}</span>
+                  <span>✗ {artwork.rejection_votes || 0}</span>
+                </div>
+                {voted[artwork.id] === undefined ? (
+                  <div className="vote-actions">
+                    <button 
+                      className="vote-yes" 
+                      onClick={() => castVote(artwork.id, true)}
+                      disabled={ticketsRemaining <= 0}
+                    >✓ yes</button>
+                    <button 
+                      className="vote-no" 
+                      onClick={() => castVote(artwork.id, false)}
+                      disabled={ticketsRemaining <= 0}
+                    >✗ no</button>
+                  </div>
+                ) : (
+                  <div className="voted-indicator">
+                    you voted {voted[artwork.id] ? '✓ yes' : '✗ no'}
+                  </div>
+                )}
+              </div>
+            </div>
+          ))
+        )}
       </div>
     </div>
   );
