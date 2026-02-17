@@ -10,7 +10,7 @@ export default function voteRoutes(supabase) {
     res.json({ message: 'Votes route is working' });
   });
 
-  // Get artworks needing votes (diagnostic version)
+  // Get artworks needing votes (simplified diagnostic version)
   router.get('/pending', async (req, res) => {
     try {
       const token = req.headers.authorization?.split(' ')[1];
@@ -18,40 +18,30 @@ export default function voteRoutes(supabase) {
 
       const decoded = jwt.verify(token, process.env.JWT_SECRET);
       
-      // Step 1: Get ALL unapproved artworks
-      const { data: allUnapproved, error: err1 } = await supabase
+      // ULTRA SIMPLE: Get ALL unapproved artworks with profiles
+      const { data, error } = await supabase
         .from('artworks')
-        .select('id, title, artist_id, voting_ends')
+        .select(`
+          *,
+          profiles!artworks_artist_id_fkey (
+            username
+          )
+        `)
         .eq('is_approved', false);
-      
-      // Step 2: Get only those with future voting_ends
-      const { data: futureVotes, error: err2 } = await supabase
-        .from('artworks')
-        .select('id, title, artist_id, voting_ends')
-        .eq('is_approved', false)
-        .gt('voting_ends', new Date().toISOString());
-      
-      // Step 3: Get final filtered list with profiles
-      const { data: final, error: err3 } = await supabase
-        .from('artworks')
-        .select('*, profiles(username)')
-        .eq('is_approved', false)
-        .gt('voting_ends', new Date().toISOString())
-        .neq('artist_id', decoded.userId)
-        .order('voting_ends', { ascending: true });
 
-      res.json({
+      if (error) throw error;
+
+      console.log('Found artworks:', data?.length || 0);
+      
+      res.json({ 
+        pending: data || [],
         debug: {
-          your_id: decoded.userId,
-          all_unapproved_count: allUnapproved?.length || 0,
-          future_votes_count: futureVotes?.length || 0,
-          final_count: final?.length || 0,
-          all_unapproved_data: allUnapproved || [],
-          future_votes_data: futureVotes || []
-        },
-        pending: final || []
+          user_id: decoded.userId,
+          count: data?.length || 0
+        }
       });
     } catch (error) {
+      console.error('Pending route error:', error);
       res.status(400).json({ error: error.message });
     }
   });
@@ -100,7 +90,7 @@ export default function voteRoutes(supabase) {
 
       if (voteError) throw voteError;
 
-      // Update artwork vote counts
+      // Update artwork vote counts using RPC
       if (vote) {
         await supabase.rpc('increment_approval', { artwork_id: artworkId });
       } else {
