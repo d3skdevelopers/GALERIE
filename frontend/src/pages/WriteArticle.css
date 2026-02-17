@@ -1,0 +1,136 @@
+.write-container {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: clamp(1rem, 4vw, 2rem);
+  width: 100%;
+}
+
+.write-container h1 {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: clamp(2rem, 6vw, 3rem);
+  font-weight: 300;
+  margin-bottom: 2rem;
+}
+
+.write-form {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  padding: clamp(1.5rem, 4vw, 2rem);
+}
+
+.write-form .form-group {
+  margin-bottom: 1.5rem;
+}
+
+.write-form label {
+  display: block;
+  margin-bottom: 0.5rem;
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+}
+
+.write-form input,
+.write-form textarea {
+  width: 100%;
+  padding: 0.75rem;
+  background: var(--bg-primary);
+  border: 1px solid var(--border);
+  color: var(--text-primary);
+  font-family: inherit;
+  font-size: 1rem;
+  resize: vertical;
+}
+
+.write-form input:focus,
+.write-form textarea:focus {
+  outline: none;
+  border-color: var(--accent);
+}
+
+.artwork-selector {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+}
+
+.artwork-chip {
+  padding: 0.5rem 1rem;
+  background: var(--bg-primary);
+  border: 1px solid var(--border);
+  color: var(--text-primary);
+  cursor: pointer;
+  transition: all 0.2s;
+  font-size: 0.9rem;
+}
+
+.artwork-chip:hover {
+  border-color: var(--accent);
+}
+
+.artwork-chip.selected {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: black;
+}
+
+.error-message {
+  color: #ff4444;
+  margin-bottom: 1rem;
+  text-align: center;
+  font-size: 0.9rem;
+}
+
+.form-actions {
+  display: flex;
+  gap: 1rem;
+  margin-top: 2rem;
+  flex-wrap: wrap;
+}
+
+.publish-button,
+.cancel-button {
+  flex: 1;
+  min-width: 120px;
+  padding: 0.75rem 1.5rem;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.publish-button {
+  background: var(--accent);
+  border: none;
+  color: black;
+}
+
+.publish-button:hover:not(:disabled) {
+  opacity: 0.9;
+}
+
+.publish-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.cancel-button {
+  background: none;
+  border: 1px solid var(--border);
+  color: var(--text-primary);
+}
+
+.cancel-button:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+@media (max-width: 768px) {
+  .form-actions {
+    flex-direction: column;
+  }
+  
+  .publish-button,
+  .cancel-button {
+    width: 100%;
+  }
+}
