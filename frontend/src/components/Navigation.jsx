@@ -38,6 +38,7 @@ export default function Navigation({ session, setDarkMode, darkMode }) {
         <span className="current">the foyer</span>
       </div>
       <div className="nav-right">
+        <Link to="/library">library</Link>
         <Link to="/search">search desk</Link>
         <Link to="/voting">voting</Link>
         {session ? (
