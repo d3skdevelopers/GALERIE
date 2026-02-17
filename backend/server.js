@@ -9,7 +9,13 @@ const app = express();
 const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_ANON_KEY);
 const supabaseAdmin = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_KEY);
 
-app.use(cors());
+// Updated CORS configuration
+app.use(cors({
+  origin: ['https://galerie-eight.vercel.app', 'http://localhost:5173', 'http://localhost:3000'],
+  credentials: true,
+  allowedHeaders: ['Content-Type', 'Authorization']
+}));
+
 app.use(express.json());
 
 // Test routes
@@ -21,7 +27,7 @@ app.get('/api/health', (req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });
 });
 
-// Import all routes
+// Import routes
 import authRoutes from './routes/auth.js';
 import artworkRoutes from './routes/artworks.js';
 import roomRoutes from './routes/rooms.js';
@@ -30,7 +36,7 @@ import voteRoutes from './routes/votes.js';
 import kinshipRoutes from './routes/kinship.js';
 import searchRoutes from './routes/search.js';
 
-// Use all routes
+// Use routes
 app.use('/api/auth', authRoutes(supabase, supabaseAdmin));
 app.use('/api/artworks', artworkRoutes(supabase, supabaseAdmin));
 app.use('/api/rooms', roomRoutes(supabase));
