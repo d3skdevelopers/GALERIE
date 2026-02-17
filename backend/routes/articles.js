@@ -101,23 +101,37 @@ export default function articleRoutes(supabase) {
     }
   });
 
-  // Create article
+  // Create article (simplified)
   router.post('/', async (req, res) => {
     try {
       // Get token from header
-      const token = req.headers.authorization?.split(' ')[1];
-      if (!token) throw new Error('Unauthorized');
+      const authHeader = req.headers.authorization;
+      if (!authHeader) {
+        return res.status(401).json({ error: 'No authorization header' });
+      }
+      
+      const token = authHeader.split(' ')[1];
+      if (!token) {
+        return res.status(401).json({ error: 'No token provided' });
+      }
 
-      // Get user from Supabase session
+      // Get user from Supabase
       const { data: { user }, error: userError } = await supabase.auth.getUser(token);
       
       if (userError || !user) {
-        throw new Error('Invalid token');
+        console.error('User error:', userError);
+        return res.status(401).json({ error: 'Invalid or expired token' });
       }
 
       const { title, body, artworkIds } = req.body;
+      
+      if (!title || !body) {
+        return res.status(400).json({ error: 'Title and body required' });
+      }
 
-      // Check if user has approved artworks (can write)
+      // Optional: Check if user has approved artworks
+      // You can enable this later if needed
+      /*
       const { data: artworks } = await supabase
         .from('artworks')
         .select('id')
@@ -126,47 +140,63 @@ export default function articleRoutes(supabase) {
         .limit(1);
 
       if (!artworks || artworks.length === 0) {
-        throw new Error('Must have approved artwork to write');
+        return res.status(403).json({ error: 'Must have approved artwork to write' });
       }
+      */
 
+      // Insert article
       const { data, error } = await supabase
         .from('articles')
         .insert({
           title,
           body,
           author_id: user.id,
-          artwork_ids: artworkIds || []
+          artwork_ids: artworkIds || [],
+          push_count: 0
         })
         .select()
         .single();
 
-      if (error) throw error;
+      if (error) {
+        console.error('Insert error:', error);
+        return res.status(400).json({ error: error.message });
+      }
+
       res.json(data);
     } catch (error) {
-      res.status(400).json({ error: error.message });
+      console.error('Create article error:', error);
+      res.status(500).json({ error: 'Internal server error' });
     }
   });
 
   // Update article
   router.put('/:id', async (req, res) => {
     try {
-      const token = req.headers.authorization?.split(' ')[1];
-      if (!token) throw new Error('Unauthorized');
+      const authHeader = req.headers.authorization;
+      if (!authHeader) return res.status(401).json({ error: 'No authorization header' });
+      
+      const token = authHeader.split(' ')[1];
+      if (!token) return res.status(401).json({ error: 'No token provided' });
 
       const { data: { user }, error: userError } = await supabase.auth.getUser(token);
-      if (userError || !user) throw new Error('Invalid token');
+      if (userError || !user) return res.status(401).json({ error: 'Invalid token' });
 
       const { title, body, artworkIds } = req.body;
 
       // Check ownership
-      const { data: article } = await supabase
+      const { data: article, error: fetchError } = await supabase
         .from('articles')
         .select('author_id')
         .eq('id', req.params.id)
         .single();
 
-      if (!article) throw new Error('Article not found');
-      if (article.author_id !== user.id) throw new Error('Not authorized');
+      if (fetchError || !article) {
+        return res.status(404).json({ error: 'Article not found' });
+      }
+      
+      if (article.author_id !== user.id) {
+        return res.status(403).json({ error: 'Not authorized' });
+      }
 
       const { data, error } = await supabase
         .from('articles')
@@ -190,21 +220,29 @@ export default function articleRoutes(supabase) {
   // Delete article
   router.delete('/:id', async (req, res) => {
     try {
-      const token = req.headers.authorization?.split(' ')[1];
-      if (!token) throw new Error('Unauthorized');
+      const authHeader = req.headers.authorization;
+      if (!authHeader) return res.status(401).json({ error: 'No authorization header' });
+      
+      const token = authHeader.split(' ')[1];
+      if (!token) return res.status(401).json({ error: 'No token provided' });
 
       const { data: { user }, error: userError } = await supabase.auth.getUser(token);
-      if (userError || !user) throw new Error('Invalid token');
+      if (userError || !user) return res.status(401).json({ error: 'Invalid token' });
 
       // Check ownership
-      const { data: article } = await supabase
+      const { data: article, error: fetchError } = await supabase
         .from('articles')
         .select('author_id')
         .eq('id', req.params.id)
         .single();
 
-      if (!article) throw new Error('Article not found');
-      if (article.author_id !== user.id) throw new Error('Not authorized');
+      if (fetchError || !article) {
+        return res.status(404).json({ error: 'Article not found' });
+      }
+      
+      if (article.author_id !== user.id) {
+        return res.status(403).json({ error: 'Not authorized' });
+      }
 
       const { error } = await supabase
         .from('articles')
