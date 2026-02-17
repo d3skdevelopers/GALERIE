@@ -1,11 +1,16 @@
 import express from 'express';
 import multer from 'multer';
-import { createClient } from '@supabase/supabase-js';
 
 const upload = multer({ dest: '/tmp' });
 const router = express.Router();
 
 export default function searchRoutes(supabase) {
+  
+  // Test route
+  router.get('/test', (req, res) => {
+    res.json({ message: 'Search route is working' });
+  });
+
   // Search endpoint
   router.post('/', upload.single('file'), async (req, res) => {
     try {
