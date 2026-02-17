@@ -5,19 +5,18 @@ const router = express.Router();
 
 export default function exhibitionRoutes(supabase) {
   
-  // Test  route to confirm file is loaded
+  // Test route to confirm file is loaded
   router.get('/test', (req, res) => {
     res.json({ message: 'Exhibitions route is working' });
   });
   
-  // Get all public exhibitions
+  // Get all public exhibitions (simplified)
   router.get('/', async (req, res) => {
     try {
       const { data, error } = await supabase
         .from('exhibitions')
         .select('*')
-        .eq('is_public', true)
-        .order('opening_date', { ascending: false });
+        .eq('is_public', true);
 
       if (error) throw error;
       res.json(data || []);
