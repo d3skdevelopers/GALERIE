@@ -1,5 +1,4 @@
 import express from 'express';
-import jwt from 'jsonwebtoken';
 
 const router = express.Router();
 
@@ -13,7 +12,6 @@ export default function articleRoutes(supabase) {
   // Get featured articles (most pushed, time-decay)
   router.get('/featured', async (req, res) => {
     try {
-      // Simple ranking: push_count / days_since_published
       const { data, error } = await supabase
         .from('articles')
         .select(`
@@ -106,17 +104,24 @@ export default function articleRoutes(supabase) {
   // Create article
   router.post('/', async (req, res) => {
     try {
+      // Get token from header
       const token = req.headers.authorization?.split(' ')[1];
       if (!token) throw new Error('Unauthorized');
 
-      const decoded = jwt.verify(token, process.env.JWT_SECRET);
+      // Get user from Supabase session
+      const { data: { user }, error: userError } = await supabase.auth.getUser(token);
+      
+      if (userError || !user) {
+        throw new Error('Invalid token');
+      }
+
       const { title, body, artworkIds } = req.body;
 
       // Check if user has approved artworks (can write)
       const { data: artworks } = await supabase
         .from('artworks')
         .select('id')
-        .eq('artist_id', decoded.userId)
+        .eq('artist_id', user.id)
         .eq('is_approved', true)
         .limit(1);
 
@@ -129,7 +134,7 @@ export default function articleRoutes(supabase) {
         .insert({
           title,
           body,
-          author_id: decoded.userId,
+          author_id: user.id,
           artwork_ids: artworkIds || []
         })
         .select()
@@ -148,7 +153,9 @@ export default function articleRoutes(supabase) {
       const token = req.headers.authorization?.split(' ')[1];
       if (!token) throw new Error('Unauthorized');
 
-      const decoded = jwt.verify(token, process.env.JWT_SECRET);
+      const { data: { user }, error: userError } = await supabase.auth.getUser(token);
+      if (userError || !user) throw new Error('Invalid token');
+
       const { title, body, artworkIds } = req.body;
 
       // Check ownership
@@ -159,7 +166,7 @@ export default function articleRoutes(supabase) {
         .single();
 
       if (!article) throw new Error('Article not found');
-      if (article.author_id !== decoded.userId) throw new Error('Not authorized');
+      if (article.author_id !== user.id) throw new Error('Not authorized');
 
       const { data, error } = await supabase
         .from('articles')
@@ -186,7 +193,8 @@ export default function articleRoutes(supabase) {
       const token = req.headers.authorization?.split(' ')[1];
       if (!token) throw new Error('Unauthorized');
 
-      const decoded = jwt.verify(token, process.env.JWT_SECRET);
+      const { data: { user }, error: userError } = await supabase.auth.getUser(token);
+      if (userError || !user) throw new Error('Invalid token');
 
       // Check ownership
       const { data: article } = await supabase
@@ -196,7 +204,7 @@ export default function articleRoutes(supabase) {
         .single();
 
       if (!article) throw new Error('Article not found');
-      if (article.author_id !== decoded.userId) throw new Error('Not authorized');
+      if (article.author_id !== user.id) throw new Error('Not authorized');
 
       const { error } = await supabase
         .from('articles')
