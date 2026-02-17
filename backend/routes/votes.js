@@ -10,14 +10,20 @@ export default function voteRoutes(supabase) {
     res.json({ message: 'Votes route is working' });
   });
 
-  // Get artworks needing votes
+  // Get artworks needing votes (excluding user's own)
   router.get('/pending', async (req, res) => {
     try {
+      const token = req.headers.authorization?.split(' ')[1];
+      if (!token) throw new Error('Unauthorized');
+
+      const decoded = jwt.verify(token, process.env.JWT_SECRET);
+      
       const { data, error } = await supabase
         .from('artworks')
-        .select('*')
+        .select('*, profiles(username)')
         .eq('is_approved', false)
         .gt('voting_ends', new Date().toISOString())
+        .neq('artist_id', decoded.userId)
         .order('voting_ends', { ascending: true });
 
       if (error) throw error;
@@ -35,6 +41,20 @@ export default function voteRoutes(supabase) {
 
       const decoded = jwt.verify(token, process.env.JWT_SECRET);
       const { artworkId, vote } = req.body;
+
+      // Check if artwork exists and get artist_id
+      const { data: artwork, error: artworkError } = await supabase
+        .from('artworks')
+        .select('artist_id')
+        .eq('id', artworkId)
+        .single();
+
+      if (artworkError) throw new Error('Artwork not found');
+
+      // Prevent voting on own work
+      if (artwork.artist_id === decoded.userId) {
+        throw new Error('Cannot vote on your own work');
+      }
 
       // Check if already voted
       const { data: existing } = await supabase
