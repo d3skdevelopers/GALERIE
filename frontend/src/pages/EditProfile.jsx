@@ -51,20 +51,44 @@ export default function EditProfile({ session }) {
       setLoading(true);
       setError('');
 
-      const { error } = await supabase
+      // First check if profile exists
+      const { data: existingProfile } = await supabase
         .from('profiles')
-        .update({
-          username,
-          full_name: fullName,
-          bio,
-          updated_at: new Date().toISOString()
-        })
-        .eq('id', session.user.id);
+        .select('id')
+        .eq('id', session.user.id)
+        .single();
 
-      if (error) throw error;
+      let result;
+      
+      if (!existingProfile) {
+        // Insert if doesn't exist
+        result = await supabase
+          .from('profiles')
+          .insert({
+            id: session.user.id,
+            username,
+            full_name: fullName,
+            bio,
+            voting_tickets: 5
+          });
+      } else {
+        // Update if exists
+        result = await supabase
+          .from('profiles')
+          .update({
+            username,
+            full_name: fullName,
+            bio,
+            updated_at: new Date().toISOString()
+          })
+          .eq('id', session.user.id);
+      }
+
+      if (result.error) throw result.error;
       
       navigate(`/artist/${username}`);
     } catch (error) {
+      console.error('Update error:', error);
       setError(error.message);
     } finally {
       setLoading(false);
@@ -78,6 +102,16 @@ export default function EditProfile({ session }) {
 
       const file = e.target.files[0];
       if (!file) return;
+
+      // Validate file size (max 5MB)
+      if (file.size > 5 * 1024 * 1024) {
+        throw new Error('File size must be less than 5MB');
+      }
+
+      // Validate file type
+      if (!file.type.startsWith('image/')) {
+        throw new Error('File must be an image');
+      }
 
       const fileExt = file.name.split('.').pop();
       const fileName = `${session.user.id}/avatar.${fileExt}`;
@@ -104,13 +138,14 @@ export default function EditProfile({ session }) {
 
       setAvatarUrl(publicUrl);
     } catch (error) {
+      console.error('Avatar upload error:', error);
       setError(error.message);
     } finally {
       setUploading(false);
     }
   }
 
-  if (loading) {
+  if (loading && !username) {
     return (
       <div className="edit-profile-container">
         <div className="loading">loading...</div>
