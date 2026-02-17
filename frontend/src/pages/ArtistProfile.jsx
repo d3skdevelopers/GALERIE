@@ -3,7 +3,7 @@ import { useParams, Link } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 import './ArtistProfile.css';
 
-export default function ArtistProfile() {
+export default function ArtistProfile({ session }) {
   const { username } = useParams();
   const [artist, setArtist] = useState(null);
   const [artworks, setArtworks] = useState([]);
@@ -132,6 +132,13 @@ export default function ArtistProfile() {
             <span>{exhibitions.length} exhibitions curated</span>
             <span>{artist.voting_tickets} voting tickets/week</span>
           </div>
+          {session?.user?.id === artist.id && (
+            <div className="profile-actions">
+              <Link to="/edit-profile" className="edit-profile-button">
+                edit profile
+              </Link>
+            </div>
+          )}
         </div>
       </div>
 
