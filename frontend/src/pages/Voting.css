@@ -1,0 +1,291 @@
+.voting-container {
+  max-width: 860px;
+  margin: 0 auto;
+  padding: clamp(1.5rem, 4vw, 3rem) clamp(1rem, 4vw, 2rem);
+}
+
+.voting-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 2rem;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.voting-header h1 {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: clamp(2rem, 6vw, 3rem);
+  font-weight: 300;
+  margin-bottom: 0.25rem;
+}
+
+.voting-sub {
+  color: var(--text-secondary);
+  font-size: 0.875rem;
+}
+
+.voting-description {
+  color: var(--text-secondary);
+  margin-bottom: 1.5rem;
+}
+
+.signin-link {
+  display: inline-block;
+  color: var(--accent);
+  text-decoration: none;
+  font-size: 1rem;
+  transition: opacity 0.2s;
+}
+.signin-link:hover { opacity: 0.8; }
+
+.tickets-box {
+  text-align: right;
+  flex-shrink: 0;
+}
+
+.tickets-count {
+  display: block;
+  font-size: 2.5rem;
+  font-weight: 300;
+  color: var(--accent);
+  line-height: 1;
+}
+
+.tickets-label {
+  display: block;
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+  margin-top: 0.25rem;
+}
+
+.voting-filters {
+  display: flex;
+  gap: 0;
+  margin-bottom: 2rem;
+  border-bottom: 1px solid var(--border);
+  flex-wrap: wrap;
+}
+
+.voting-filters button {
+  background: none;
+  border: none;
+  padding: 0.6rem 1.25rem;
+  font-size: 0.875rem;
+  color: var(--text-secondary);
+  cursor: pointer;
+  position: relative;
+  font-family: inherit;
+  transition: color 0.2s;
+}
+
+.voting-filters button:hover { color: var(--text-primary); }
+
+.voting-filters button.active {
+  color: var(--accent);
+}
+
+.voting-filters button.active::after {
+  content: '';
+  position: absolute;
+  bottom: -1px;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: var(--accent);
+}
+
+.submissions-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.submission-card {
+  display: flex;
+  gap: 1.5rem;
+  padding: 1.5rem;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  transition: border-color 0.2s;
+}
+
+.submission-card.voted {
+  opacity: 0.7;
+}
+
+.submission-preview {
+  width: 90px;
+  height: 90px;
+  flex-shrink: 0;
+  background: var(--bg-primary);
+  border: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.submission-preview img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.submission-iframe {
+  width: 100%;
+  height: 100%;
+  border: none;
+  pointer-events: none; /* don't let iframe steal clicks from vote buttons */
+}
+
+.preview-icon {
+  font-size: 2rem;
+  color: var(--accent);
+}
+
+.submission-info { flex: 1; min-width: 0; }
+
+.submission-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-bottom: 0.5rem;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.submission-header h3 {
+  font-size: 1.1rem;
+  font-weight: 400;
+  word-break: break-word;
+}
+
+.submission-artist {
+  color: var(--accent);
+  font-size: 0.85rem;
+}
+
+.submission-description {
+  color: var(--text-secondary);
+  font-size: 0.875rem;
+  line-height: 1.5;
+  margin-bottom: 0.75rem;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.submission-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem 1.25rem;
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+  margin-bottom: 1rem;
+}
+
+.vote-tally { display: flex; gap: 0.75rem; }
+.yes-count { color: #4ade80; }
+.no-count { color: #f87171; }
+
+.vote-actions {
+  display: flex;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.vote-yes, .vote-no {
+  padding: 0.5rem 1.5rem;
+  background: none;
+  border: 1px solid var(--border);
+  color: var(--text-primary);
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 0.875rem;
+  transition: all 0.2s;
+  min-width: 100px;
+}
+
+.vote-yes:hover:not(:disabled) { border-color: #4ade80; color: #4ade80; }
+.vote-no:hover:not(:disabled) { border-color: #f87171; color: #f87171; }
+.vote-yes:disabled, .vote-no:disabled { opacity: 0.35; cursor: not-allowed; }
+
+.voted-badge {
+  display: inline-block;
+  padding: 0.4rem 1rem;
+  font-size: 0.875rem;
+  border: 1px solid;
+}
+
+.voted-badge.yes { color: #4ade80; border-color: rgba(74, 222, 128, 0.3); background: rgba(74, 222, 128, 0.06); }
+.voted-badge.no { color: #f87171; border-color: rgba(248, 113, 113, 0.3); background: rgba(248, 113, 113, 0.06); }
+
+.no-submissions {
+  text-align: center;
+  padding: 4rem 2rem;
+  color: var(--text-secondary);
+}
+
+.no-submissions p { margin-bottom: 1.5rem; }
+.upload-link { color: var(--accent); text-decoration: none; }
+
+.tickets-empty {
+  margin-top: 2rem;
+  padding: 1rem 1.5rem;
+  background: rgba(212, 175, 55, 0.06);
+  border: 1px solid rgba(212, 175, 55, 0.2);
+  color: var(--text-secondary);
+  font-size: 0.875rem;
+  text-align: center;
+}
+
+@media (max-width: 600px) {
+  .submission-card {
+    flex-direction: column;
+    padding: 1rem;
+    gap: 1rem;
+  }
+
+  .submission-preview {
+    width: 100%;
+    height: 120px;
+  }
+
+  .vote-actions { flex-direction: column; }
+  .vote-yes, .vote-no { width: 100%; }
+}
+
+/* ── HTML artwork protection ─────────────────────────────────── */
+.html-preview-wrap {
+  position: relative;
+  width: 100%;
+  height: 100%;
+}
+
+/* Transparent shield — sits above iframe, blocks right-click and drag */
+.html-preview-shield {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  cursor: default;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.submission-iframe {
+  width: 100%;
+  height: 100%;
+  border: none;
+  display: block;
+  pointer-events: none; /* shield handles all interaction */
+}
+
+.loading-spin {
+  display: inline-block;
+  animation: spin 1s linear infinite;
+  color: var(--text-secondary);
+}
+
+@keyframes spin { to { transform: rotate(360deg); } }

@@ -1,0 +1,84 @@
+.notfound {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: calc(100vh - 70px);
+  padding: 2rem 1rem;
+  text-align: center;
+}
+
+.notfound-inner {
+  max-width: 480px;
+}
+
+.notfound-glyph {
+  font-size: 2.5rem;
+  color: var(--accent);
+  margin-bottom: 1.5rem;
+  opacity: 0.6;
+  animation: pulse 3s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 0.4; transform: scale(1); }
+  50%       { opacity: 0.8; transform: scale(1.08); }
+}
+
+.notfound h1 {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: clamp(5rem, 16vw, 8rem);
+  font-weight: 200;
+  line-height: 1;
+  margin: 0 0 0.5rem;
+  color: var(--text-primary);
+  letter-spacing: -0.02em;
+}
+
+.notfound-headline {
+  font-size: 1.1rem;
+  color: var(--text-secondary);
+  margin-bottom: 0.5rem;
+}
+
+.notfound-path {
+  font-family: 'Courier New', monospace;
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+  opacity: 0.6;
+  margin-bottom: 2.5rem;
+  word-break: break-all;
+}
+
+.notfound-links {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  align-items: center;
+}
+
+.notfound-btn {
+  display: inline-block;
+  padding: 0.7rem 1.75rem;
+  text-decoration: none;
+  font-size: 0.9rem;
+  letter-spacing: 0.4px;
+  transition: opacity 0.2s, border-color 0.2s;
+  border: 1px solid var(--border);
+  color: var(--text-secondary);
+  min-width: 200px;
+}
+
+.notfound-btn.primary {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: black;
+  font-weight: 500;
+}
+
+.notfound-btn:hover         { opacity: 0.8; }
+.notfound-btn.primary:hover { opacity: 0.9; }
+
+@media (max-width: 480px) {
+  .notfound-links { width: 100%; }
+  .notfound-btn   { min-width: 0; width: 100%; text-align: center; }
+}
