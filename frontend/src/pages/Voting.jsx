@@ -47,6 +47,9 @@ function HtmlPreview({ fileUrl, title }) {
     </div>
   );
 }
+
+// Renders a .pg genome to a small canvas for HTML works without preview_url
+function GenomeThumb({ genome }) {
   const ref = useRef(null);
   useEffect(() => {
     if (!ref.current || !genome) return;
